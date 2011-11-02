@@ -57,7 +57,7 @@ while($ban = $res->fetchObject()) {
 
 	$values = array
 	(
-		'<input type="checkbox" name="unban[]" value="'.$ban->target.'" class="inline" />' . ($ban->action == 'ban_ip' ? '<a href="'.DIR.'IP_address/'.$ban->target.'">'.$ban->target.'</a>' : '<a href="'.DIR.'profile/'.$ban->target.'">'.$ban->target.'</a>'),
+		'<input type="checkbox" name="unban[]" value="'.$ban->target.'" class="inline" onclick="highlightRow(this)" />' . ($ban->action == 'ban_ip' ? '<a href="'.DIR.'IP_address/'.$ban->target.'">'.$ban->target.'</a>' : '<a href="'.DIR.'profile/'.$ban->target.'">'.$ban->target.'</a>'),
 		htmlspecialchars($ban->reason),
 		'<a href="'.DIR.'profile/'.$ban->mod_uid.'">'.($perm->get_name($ban->mod_uid) ? $perm->get_name($ban->mod_uid) : $ban->mod_uid).'</a>',
 		'<span class="help" title="' . format_date($ban->time) . '">' . age($ban->time) . '</span>',

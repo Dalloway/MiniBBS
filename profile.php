@@ -161,7 +161,7 @@ if($id_num_topics > 0) {
 	{
 		$values = array 
 		(
-			'<input type="checkbox" name="topics[]" value="'.$topic->id.'" class="inline" />' . format_headline(htmlspecialchars($topic->headline), $topic->id, $topic->replies, $topic->poll, $topic->locked, $topic->sticky),
+			'<input type="checkbox" name="topics[]" value="'.$topic->id.'" class="inline" onclick="highlightRow(this)" />' . format_headline(htmlspecialchars($topic->headline), $topic->id, $topic->replies, $topic->poll, $topic->locked, $topic->sticky),
 			($topic->namefag || $topic->tripfag) ? '<strong>' .htmlspecialchars($topic->namefag). '</strong> ' . $topic->tripfag : 'Anonymous',
 			'<a href="'.DIR.'IP_address/' . $topic->author_ip . '">' . $topic->author_ip . '</a>',
 			replies($topic->id, $topic->replies),
@@ -209,7 +209,7 @@ if($id_num_replies > 0) {
 	{
 		$values = array 
 		(
-			'<input type="checkbox" name="replies[]" value="'.$reply->id.'" class="inline" /><a href="'.DIR.'topic/' . $reply->parent_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $reply->id . '">' . parser::snippet($reply->body) . '</a>',
+			'<input type="checkbox" name="replies[]" value="'.$reply->id.'" class="inline" onclick="highlightRow(this)" /><a href="'.DIR.'topic/' . $reply->parent_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $reply->id . '">' . parser::snippet($reply->body) . '</a>',
 			'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($topic_time) . '">(' . age($reply->topic_time) . ' old)</span>',
 			($reply->namefag || $reply->tripfag) ? '<strong>' .htmlspecialchars($reply->namefag). '</strong> ' . $reply->tripfag : 'Anonymous',
 			'<a href="'.DIR.'IP_address/' . $reply->author_ip . '">' . $reply->author_ip . '</a>',
@@ -253,9 +253,9 @@ $table = new Table($columns, 1);
 
 while($trash = $fetch_trash->fetchObject()) {
 	if(empty($trash->headline)) {
-		$trash->headline = '<input type="checkbox" name="undelete_replies[]" value="'.$trash->id.'" class="inline" /><span class="unimportant"><a href="'.DIR.'topic/'. $trash->parent_id.'#reply_'. $trash->id.'">(Reply.)</a></span>';
+		$trash->headline = '<input type="checkbox" name="undelete_replies[]" value="'.$trash->id.'" class="inline" onclick="highlightRow(this)" /><span class="unimportant"><a href="'.DIR.'topic/'. $trash->parent_id.'#reply_'. $trash->id.'">(Reply.)</a></span>';
 	} else {
-		$trash->headline = '<input type="checkbox" name="undelete_topics[]" value="'.$trash->id.'" class="inline" /><a href="'.DIR.'topic/'.(int) $trash->id.'">' . htmlspecialchars($trash->headline) . '</a>';
+		$trash->headline = '<input type="checkbox" name="undelete_topics[]" value="'.$trash->id.'" class="inline" onclick="highlightRow(this)" /><a href="'.DIR.'topic/'.(int) $trash->id.'">' . htmlspecialchars($trash->headline) . '</a>';
 	}
 
 	$values = array 

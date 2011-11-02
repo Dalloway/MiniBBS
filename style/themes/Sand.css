@@ -79,7 +79,7 @@ input[type="text"]:focus,input[type="password"]:focus,textarea:focus {
 	table tr.odd td {
 		background-color:#eaecd9;
 	}
-	table tr:hover td {
+	table tr:hover td, table tr.checked td {
 		background-color:#f9fbea;
 	}
 

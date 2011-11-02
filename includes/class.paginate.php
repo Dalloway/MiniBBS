@@ -24,9 +24,6 @@ class Paginate {
 		$this->offset = ITEMS_PER_PAGE * ($this->current - 1);
 	}
 	
-	public function limit_sql() {
-	}
-	
 	/* Generates HTML links for navigating between pages. */
 	public function navigation($section_name, $num_items_fetched) {
 		$output = '';

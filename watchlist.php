@@ -40,7 +40,7 @@ $topics->add_td_class(0, 'topic_headline');
 while ($topic = $res->fetchObject()) {
 	$values = array
 	(
-		'<input type="checkbox" name="rejects[]" value="' . $topic->id . '" class="inline" /> <a href="'.DIR.'topic/' . $topic->id . '">' . htmlspecialchars($topic->headline) . '</a>',
+		'<input type="checkbox" name="rejects[]" value="' . $topic->id . '" class="inline" onclick="highlightRow(this)" /> <a href="'.DIR.'topic/' . $topic->id . '">' . htmlspecialchars($topic->headline) . '</a>',
 		replies($topic->id, $topic->replies),
 		format_number($topic->visits),
 		'<span class="help" title="' . format_date($topic->time) . '">' . age($topic->time) . '</span>'

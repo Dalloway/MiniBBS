@@ -29,6 +29,14 @@ function highlightPoster(number) {
 	}
 }
 
+function highlightRow(checkbox) {
+	if(checkbox.checked) {
+		$(checkbox).parents('tr').addClass('checked');
+	} else {
+		$(checkbox).parents('tr').removeClass('checked');
+	}
+}
+
 function focusId(id) {
 	document.getElementById(id).focus();
 	init();
@@ -73,10 +81,12 @@ function checkAll(formId) {
 
 	for (i = 0; i < inputs.length; i++) {
 		if (inputs[i].type == 'checkbox') {
-			if (master_checked)
+			if (master_checked) {
 				inputs[i].checked = true;
-			else
+			} else {
 				inputs[i].checked = false;
+			}
+			highlightRow(inputs[i]);
 		}
 	}
 }

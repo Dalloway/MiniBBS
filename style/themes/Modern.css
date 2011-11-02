@@ -263,7 +263,7 @@ table {
     table tr.odd td {
     	background-color:#dbd9f4;
     }
-    table tr:hover td {
+    table tr:hover td, table tr.checked td {
         background-color:#ffffff !important;
     }
     table .minimal {

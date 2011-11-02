@@ -97,7 +97,7 @@ table tr.odd td {
 	background-color:#F4F9FC;
 }
 
-table tr:hover td {
+table tr:hover td, table tr.checked td {
 	background-color:#E1ECF2;
 }
 
