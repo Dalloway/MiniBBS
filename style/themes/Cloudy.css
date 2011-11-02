@@ -1,0 +1,110 @@
+body {
+	background-color:#A2BDCF;
+	color:#214056;
+}
+
+#header, li ul, ul#main_menu {
+	background-color:#D9E2E8;
+}
+
+h1 a {
+color:#345873;
+}
+
+#header input {
+	background-color:#fff;
+	border:1px solid #BCC8D1;
+}
+
+ul#main_menu li#menu_history:last-child {
+	border-left:1px solid #AFC0CC;
+}
+
+ul#main_menu {
+	background-color:#D9E2E8;
+}
+
+.topic_page a {
+	border-color:#345873;
+	background-color:#D9E2E8;
+}
+
+.body {
+	background-color:#EFF4F7;
+}
+
+.deleted_post, .report_reason {
+	border-color:#345873;
+	background-color:#E3E9ED;
+}
+
+span.quote, .you {
+	color:#188587;
+}
+
+.highlighted {
+	background-color:#DCEAF2;
+}
+
+.codebox {
+	color: #8b8b8b;
+}
+
+.spoiler {
+	background-color:#000;
+	color:#000;
+}
+	.spoiler:hover {
+		color:#fff;
+	}
+	
+.border {
+	background-color:#A2BDCF;
+	border:3px dashed #345873;
+}
+
+.highlight {
+	background-color:#000000;
+}
+
+a {
+	color:#345873;
+}
+
+#notice {
+	background-color:#D9E2E8;
+    box-shadow:0px;
+    padding:.5em;
+	margin-top:1em;
+    border-radius:5px 5px 0 0;
+}
+
+h3 {
+	background-color:#F2F6F9;
+}
+
+input[type="text"]:focus,input[type="password"]:focus,textarea:focus {
+	outline:1px solid #345873;
+}
+
+table th {
+	background-color:#D9E2E8;
+}
+table td {
+	background-color:#EFF4F7;
+}
+table tr.odd td {
+	background-color:#F4F9FC;
+}
+
+table tr:hover td {
+	background-color:#E1ECF2;
+}
+
+em.marked {
+	background-color:#ff9;
+}
+
+.last_seen_marker {
+	border-top:2px solid #b2b2b2;
+}

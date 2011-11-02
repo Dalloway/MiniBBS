@@ -1,0 +1,120 @@
+body {
+	background-color:#000;
+	color:#D6D6D6;
+}
+
+#header, li ul, ul#main_menu {
+	background-color:#333333;
+}
+
+#header input {
+	background-color:#E5E3E3;
+	color:#000;
+	border:1px solid #aaa;
+	padding:0px;
+}
+
+ul#main_menu li#menu_history:last-child {
+	border-left:1px solid #444;
+}
+
+.topic_page a {
+	border-color:#333333;
+	background-color:#262525;
+}
+
+.body {
+	background-color:#333333;
+}
+
+.deleted_post, .report_reason {
+	border-color:#918E8E;
+	background-color:#3A3A3A;
+}
+
+span.quote, .you {
+	color:#00dd00;
+}
+
+.highlighted {
+	background-color:#141414;
+}
+
+.codebox {
+	color: #8b8b8b;
+}
+
+.spoiler {
+	background-color:#000;
+	color:#000;
+}
+	.spoiler:hover {
+		color:#fff;
+	}
+	
+.border {
+	background-color:#e0e0e0;
+	border:3px dashed #c0c0c0;
+	color:#000;
+}
+
+.highlight {
+	background-color:#000000;
+}
+
+a {
+	color:#DDDDDD;
+}
+
+#notice {
+	background-color:#333333;
+    padding:.5em;
+	margin-top:1em;
+    border-radius:5px 5px 0 0;
+	border-bottom:1px solid #aaa;
+}
+
+h3 {
+	background-color:#262626;
+}
+
+textarea, input, select {
+	background-color:#262525;
+	border:1px solid #423E3E;
+	border-radius:3px;
+	color:#F2EFEF;
+}
+
+textarea, input[type=text], input[type=password] {
+	padding:2px;
+}
+
+input[type="text"]:focus,input[type="password"]:focus,textarea:focus {
+	outline:1px solid #666666;
+	background-color:#26292D;
+}
+
+ul#main_menu {
+	background-color:#333333;
+}
+
+table th {
+	background-color:#303030;
+}
+table td {
+	background-color:#3A3A3A;
+}
+table tr.odd td {
+	background-color:#3F3F3F;
+}
+table tr:hover td {
+	background-color:#666666;
+}
+
+em.marked {
+	background-color:#ff9;
+}
+
+.last_seen_marker {
+	border-top:2px solid #b2b2b2;
+}

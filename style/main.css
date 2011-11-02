@@ -1,0 +1,466 @@
+/* Contains elements common to all (or most) styles */
+body {
+	font-family:arial, sans-serif;
+	font-size:12px;
+	padding:0 1em;
+	margin:0px;
+	}
+
+#notice {
+	padding:.5em;
+}
+
+#header {
+	margin:0 0 1em;
+	padding:7px 0 7px 10px;
+	border-radius:0 0 5px 5px;
+}
+
+	#header a {
+		text-decoration:none;
+	}
+
+	#header input[type=submit] {
+		display:none;
+	}
+
+	#header input {
+		width:11em;
+		padding-right:20px;
+		margin-left:1em;
+		border-radius:1px;
+		background-image:url('search.png');
+		background-repeat:no-repeat;
+		background-position:98% 50%; 
+	}
+
+	#header input:hover, #header input:focus {
+		background-color:#fff;
+	}
+
+	h1 {
+		font-size:17px;
+	}
+
+	h1, #header form, #header input {
+		display:inline;
+	}
+
+	ul#main_menu {
+		padding: 0;
+		padding-right:3px;
+		margin:0;
+		margin-top: 2px;
+		float:right;
+	}
+
+	ul#main_menu li, ul#main_menu li ul li {
+		float: left;
+		position: relative;
+	}
+
+	ul#main_menu li#menu_history:last-child {
+		padding-left:.7em;
+	}
+
+	li ul {
+		display: none;
+		position: absolute;
+		right:0;
+		padding:0;
+		padding:.7em 1.2em;
+		border-radius:2px;
+	}
+	
+	
+	li:hover ul, li ul li a {
+		display: block;
+	}
+
+	li ul li {
+		width:100%;
+		text-align:left;
+		white-space: nowrap;
+		margin:0!important;
+		margin-top:6px!important;
+	}
+
+h3, .body, #header, li ul {
+	box-shadow:0px 1px 3px rgba(0,0,0,0.35);
+	-moz-box-shadow:0px 1px 3px rgba(0,0,0,0.35);
+	-webkit-box-shadow:0px 1px 3px rgba(0,0,0,0.35);
+}
+
+h2 {
+	font-size:16px;
+	margin-left:7px;
+}
+	h2 a:hover {
+		text-decoration:underline;
+	}
+
+h3 {
+	font-size:12px;
+	font-weight:400;
+	margin:.7em 0 0;
+	padding:.5em;
+	border-radius:4px 4px 0 0;
+	overflow:auto;
+}
+
+	h3.repeat_post {
+		margin:0;
+		margin-top:-.2em;
+		border-radius:0;
+	}
+	
+form#poll {
+	margin-top:.7em;
+}
+
+.topic_pages {
+	margin:1em;
+}
+
+.topic_page {
+	margin:0 1px;
+	font-size:90%;
+}
+
+.all_pages {
+	margin-left:1em;
+}
+
+.topic_page a {
+	text-decoration:none;
+	border:1px solid;
+	border-radius:3px;
+	padding:1px 3px;
+}
+
+.current_page {
+	border:none;
+	padding:0;
+}
+
+.join_space {
+	float:left;
+	width:10px;
+	font-family:Times New Roman;
+	text-decoration:none;
+}
+
+.body {
+	line-height:1.5em;
+	overflow:hidden;
+	padding:.6em;
+	margin:0;
+	padding-bottom:.7em;
+	white-space:normal;
+	word-wrap:break-word;
+	border-radius:0 0 4px 4px;
+}
+
+	.body img {
+		border:none;
+		float:left;
+		margin-bottom:6px;
+		margin-right:7px;
+	}
+
+	.body ul.menu {
+		clear:both;
+		margin:.5em 0 0;
+		text-align:right;
+	}
+		
+	.body ul.menu li {
+		margin:0 0 0 .5em;
+	}
+	
+	.deleted_post, .report_reason {
+		clear:both;
+		margin:-6px;
+		margin-top:3px;
+		padding:5px;
+		font-size:95%;
+		border-top:1px dotted;
+	}
+	
+	.deleted_post {
+		background-image:url('exclamation.png');
+		background-repeat:no-repeat;
+		background-position:4px 50%;
+		padding-left:25px;
+	}
+
+.reply_id {
+	float:right;
+	text-align:right;
+	vertical-align:middle;
+}
+
+h4.section {
+	font-size:15px;
+	margin-bottom:7px;
+}
+
+h4.user {
+	font-size:14px;
+	margin:0 0 .5em;
+}
+
+label.common, label.short {
+	float:left;
+	padding-right:.6em;
+	text-align:right;
+}
+
+label.common {
+	width:14em;
+}
+
+label.short {
+	width:9em;
+}
+
+input.short_indent {
+	margin-left:8.5em;
+}
+
+input,textarea {
+	display:block;
+}
+
+textarea {
+	font-family:monospace;
+	width:100%;
+}
+
+input[type='radio'] {
+	display: inline;
+}
+
+input[type='submit'] {
+	margin-top:1px;
+}
+
+#quick_search {
+	float: right;
+}
+
+fieldset {
+	margin:1em 0;
+}
+
+#syntax_link {
+	float: right;
+	margin-top:4px;
+}
+
+ul.body,ul.error_message {
+	list-style-type:none;
+}
+
+ul.error_message {
+	margin:0;
+	padding:0;
+}
+	ul.error_message li {
+		font-style:italic;
+		padding:.2em;
+	}
+
+ul.menu {
+	margin:1em;
+	text-align:center;
+}
+	ul.menu li {
+		display:inline;
+		font-weight:700;
+		margin:0 1em;
+	}
+
+ul.stuff {
+	margin-bottom:2em;
+}
+	ul.stuff li {
+		margin-bottom:.5em;
+	}
+
+table {
+	border-collapse:collapse;
+	margin-bottom:1em;
+	width:100%;
+}
+	table th {
+		padding:.5em;
+		text-align:left;
+	}
+	table td {
+		padding:.5em;
+		vertical-align:top;
+	}
+
+	table .minimal {
+		white-space:nowrap;
+		width:1%;
+	}
+	
+	.headline_pages {
+		font-size:90%;
+		margin-left:.5em;
+		display:none;
+	}
+
+	tr:hover .headline_pages {
+		display:inline;
+	} 
+
+	.headline_pages a {
+		text-decoration:none;
+	}
+	
+	table input[type=checkbox] {
+		margin-right:.6em;
+	}
+
+
+
+.bar_container {
+	width: 130px; 
+	padding:1px;
+	border:1px solid #555;
+}
+
+.bar {
+	height:.9em; 
+	background-color:#990000;
+}
+
+#footer {
+	margin:.8em 0;
+	text-align:center;
+	clear:both;
+}
+
+.pm_body ul.menu {
+	margin:.5em 0 0;
+	text-align:right;
+}
+.pm_body ul.menu li {
+	margin:0 0 0 .5em;
+	font-size:10px;
+}
+.highlighted td {
+	background-color:inherit!important;
+}
+
+.reply_body_snippet,.snippet {
+	font-size:95%;
+}
+
+.topic_headline a:visited, .topic_headline .visited {
+    font-weight:400;
+}
+
+.topic_info {
+	float: right;
+	cursor: default;
+}
+
+em.marked {
+	font-style:normal;
+	font-weight:700;
+	color:#000;
+}
+
+.you {
+	font-style:italic;
+	font-weight:bold;
+}
+
+.codebox {
+	overflow: auto;
+	display: block;
+	height: auto;
+	max-height: 250px;
+	white-space: normal;
+	padding-top: 5px;
+	font: 0.9em monaco, "andale mono","courier new", courier, mono;
+	line-height: 1.3em;
+	margin: 3px 0;
+}
+
+.border {
+	margin:1em;
+	padding:.5em;
+}
+
+.php {
+	background-color:#F0F0F0;
+	border:#E1E1E1;
+	padding:0.5em;
+}
+
+.shift_jis {
+	font-family:IPAMonaPGothic, Mona, 'MS PGothic';
+	font-size:16px;
+	display:inline;
+}
+
+.highlight {
+	font-style:normal;
+	font-weight:700;
+}
+
+p.caption {
+	font-size:11px;
+	margin-top:2px;
+	margin-left:16em;
+}
+
+.inline {
+	display:inline;
+}
+
+#snapback_link {
+	left:2px;
+	position:fixed;
+	top:50%;
+}
+
+.video,video,a.video {
+	clear:both;
+	margin:10px 0;
+	text-align:center;
+}
+
+.standalone,.row {
+	margin-bottom:1em;
+}
+
+.body ul.menu li,.body ul.menu li a,.body ul.menu li span,.unimportant,.unimportant * {
+	font-size:10px;
+}
+
+a:hover,h2 a,#snapback_link a {
+	text-decoration:none;
+}
+
+a.youtube_alternate,.noscreen {
+	display:none;
+}
+
+h3#preview,h3#error,h3#replying_to,label,legend,.topic_headline a,.reply_body_snippet a,.snippet a {
+	font-weight:700;
+}
+
+.help,.help_cursor {
+	cursor:help;
+}
+
+.undo {
+	font-size:80%;
+	float:right;
+}

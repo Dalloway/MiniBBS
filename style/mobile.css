@@ -1,0 +1,369 @@
+*{
+	margin: 0; 
+	padding: 0;
+}
+
+body 
+{
+	font-size:12px;
+	font-family: Arial, sans-serif;
+}
+
+img
+{
+	border: none;
+}
+
+	
+#notice
+{
+	padding: 0.5em;
+}
+
+#header input, h1, .dropdown, li ul {
+	display:none;
+}
+
+#main_menu {
+	float:none;
+	text-align:center;
+	margin:0;
+}
+
+ul#main_menu li, ul#main_menu li ul li {
+	float: none;
+}
+
+ul#main_menu li#menu_history {
+	border: none;
+}
+
+h2
+{
+	font-size: 16px;
+	margin: 0.5em 8px;
+}
+
+h2.repeat_post
+{
+margin:0;
+}
+	
+h3
+{
+	font-size: 12px;
+	font-weight: normal;
+	margin: 0;
+	padding: 0.5em;
+}
+
+.topic_pages {
+	margin:1em 0;
+}
+
+.topic_page a {
+	padding:3px;
+}
+
+p
+{
+	margin: 1em;
+}
+	p.caption
+	{
+		margin-top: 2px;
+		font-size: 11px;
+	}
+	p.head
+	{
+		padding: 0.5em;
+		margin: 0;
+		overflow: auto;
+	}
+	.post_main
+	{
+		float: left;
+	}
+	.post_ID
+	{
+		color: #c00;
+		font-weight: bold;
+		text-decoration: none;
+	}
+	#error
+	{
+		font-weight: bold;
+	}
+	
+h4
+{
+	font-size: 14px;
+	margin: 0 0 0.5em 0;
+}
+	h4.section
+	{
+		font-size: 15px;
+		margin: 0 1em 1em;
+	}
+
+.timing_details {
+	display:none;
+}
+
+.body
+{
+	margin: 0;
+	padding: 0.5em;
+	overflow: hidden;
+	line-height: 1.5em;
+}
+	.spoiler
+	{
+		background-color: #000;
+		color: #666;
+	}
+	.standalone
+	{
+		margin-bottom: 1em;
+	}
+	ul, ol
+	{
+		margin-left: 4em;
+	}
+	ul.menu
+	{
+		padding: 0;
+	}
+	.body ul.menu
+	{
+		text-align: right;
+		margin: 0.5em 0 0 0;
+		clear: both;
+	}
+		.body ul.menu li
+		{
+			margin: 0 0 0 0.5em;
+		}
+
+		.body ul.menu li,
+		.body ul.menu li a,
+		.body ul.menu li span
+		{
+			font-size: 10px;
+		}
+		.body img.thumbnail
+		{
+			float: left;
+			margin: 6px 9px 6px 6px;
+		}
+
+.split
+{
+	float: left;
+	width: 50%;
+}
+		
+label
+{
+	font-weight: bold;
+}
+	label.common
+	{
+		margin-right: 0.5em;
+		text-align: right;
+		width: 15em;
+		float: left;
+	}
+input,
+textarea
+{
+	display: block;
+}
+input[type="text"]
+{
+	padding: 1px;
+	font-family: monospace;
+}
+textarea
+{
+	padding: 2px;
+	margin: 0 0 1em 0;
+	width: 100%;
+	font-family: monospace;
+}
+input[type="submit"]
+{
+	margin-right: 4px;
+	padding: 1px;
+}
+input[type="file"]
+{
+	width: 100%;
+	margin-top: 0.5em;
+}
+input[type="checkbox"]
+{
+	margin: 0 3px;
+}
+
+fieldset { 
+	margin: 1em;
+}
+	legend 
+	{
+		font-weight: bold;
+	}
+	
+#markup_link {
+	display: none;
+}
+
+ul.body,
+ul.error_message
+{
+	list-style-type: none;
+}
+
+ul.error_message
+{
+	padding: 0;
+	margin: 0;
+}
+	ul.error_message li
+	{
+		font-style: italic;
+		padding: .2em;
+	}
+
+ul.menu
+{
+	text-align: center;
+	margin: 1em;
+}
+	ul.menu li
+	{
+		display: inline;
+		margin: 0 1em 0 1em;
+		font-weight: bold;
+	}
+	
+	
+ul.stuff
+{
+	margin-bottom: 2em;
+}
+	ul.stuff li
+	{
+		margin-bottom: 0.5em;
+	}
+
+table
+{
+	width: 100%;
+	border-collapse: collapse;
+	margin-bottom: 1em;
+}
+
+	table th
+	{
+		text-align: left;
+		padding: 0.5em;
+	}
+
+	table td
+	{
+		padding: 0.5em;
+		vertical-align: top;
+	}
+
+	table .minimal
+	{
+		white-space: nowrap;
+		width: 1%;
+	}
+	
+.reply_body_snippet,
+.snippet
+{
+	font-style: italic;
+}
+
+.topic_headline a,
+.reply_body_snippet a,
+.snippet a
+{
+	font-weight: bold;
+	text-decoration: none;
+}
+
+	.topic_headline a:visited
+	{
+		font-weight: normal;
+	}
+
+em.marked
+{
+	background-color: #FF9;
+	font-weight: bold;
+	font-style: normal;
+}
+
+.unimportant,
+.unimportant *
+{
+	font-size: 10px;
+}	
+
+.row
+{
+	margin: 0 1em 1em;
+}
+
+.inline 
+{
+	display: inline;
+}
+
+.help 
+{
+	cursor: help;
+}
+
+#memorable_name
+{
+	margin-bottom: 0.5em;
+}
+
+#hot_topics li
+{
+	line-height: 1.5em;
+}
+
+#hot_topics a
+{
+	font-weight: bold;
+}
+	#hot_topics a:visited
+	{
+		font-weight: normal;
+	}
+
+#snapback_link
+{
+	position: fixed;
+	left: 4px;
+	font-size: 18px;
+	font-weight: bold;
+	top: 50%;
+}
+
+	#snapback_link a
+	{
+		text-decoration: none;
+	}
+	
+.center
+{
+	text-align: center;
+	margin: auto;
+}

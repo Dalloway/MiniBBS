@@ -1,0 +1,94 @@
+/* TinyBBS default blue CSS. */
+body {
+	background-color:#c4ddec;
+}
+
+#header, li ul, ul#main_menu {
+	background-color:#94b8cd;
+}
+
+#header input {
+	background-color:#EAF7FF;
+	border:1px solid #6C98B2;
+}
+
+ul#main_menu li#menu_history:last-child {
+	border-left:1px solid #6C98B2;
+}
+	
+.body {
+	background-color:#c4ddec;
+}
+
+.deleted_post, .report_reason {
+	border-color:#80A6BC;
+	background-color:#B9D7E8;
+}
+
+.codebox {
+	color: #8b8b8b;
+}
+
+span.quote, .you {
+	color:#3c6d8a;
+}
+
+.highlighted {
+	background-color:#def;
+}
+
+.spoiler {
+	background-color:#000;
+}
+	.spoiler:hover {
+		color:#fff;
+	}
+
+.border {
+	background-color:#d8f0d8;
+	border:3px dashed #ceceff;
+}
+
+.highlight {
+	background-color:#ffff99;
+}
+
+a {
+	color:#000;
+}
+
+#notice {
+	background-color:#daedf8;
+	border:2px solid #94b8cd;
+}
+
+h3 {
+	background-color:#94b8cd;
+}
+
+input[type="text"]:focus,input[type="password"]:focus,textarea:focus {
+	outline:1px solid #94b8cd;
+}
+
+
+
+	table th {
+		background-color:#94b8cd;
+	}
+	table td {
+		background-color:#daedf8;
+	}
+	table tr.odd td {
+		background-color:#d4ebf7;
+	}
+	table tr:hover td {
+		background-color:#fff;
+	}
+
+em.marked {
+	background-color:#ff9;
+}
+
+.last_seen_marker {
+	border-top:2px solid #94b8cd;
+}

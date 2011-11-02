@@ -1,0 +1,274 @@
+body {
+	background:url("fade.png") repeat-x scroll center top #FFFFEE;
+	font-family:arial,sans-serif;
+	font-size:12px;
+	margin:0;
+	padding:0 1em;
+}
+
+#header, li ul, ul#main_menu {
+	background-color:#EEAA88;
+}
+
+#header input {
+	background-color: #FFEBE2;
+	border:1px solid #BF7654;
+}
+
+ul#main_menu li#menu_history:last-child {
+	border-left:1px solid #BF7654;
+}
+
+.body {
+	background-color:#F0E0D6;
+	line-height:1.5em;
+	margin:0;
+	overflow:hidden;
+	padding:0.5em;
+	white-space:normal;
+	word-wrap:break-word;
+}
+.body img {
+	border:medium none;
+	float:left;
+	margin-bottom:6px;
+	margin-right:7px;
+}
+.body ul.menu {
+	clear:both;
+	margin:0.5em 0 0;
+	text-align:right;
+}
+.body ul.menu li {
+	margin:0 0 0 0.5em;
+}
+
+.deleted_post, .report_reason {
+	border-color:;
+	background-color:;
+}
+	
+.codebox {
+	color:#8B8B8B;
+	display:block;
+	font:0.9em/1.3em monaco,"andale mono","courier new",courier,mono;
+	height:auto;
+	margin:3px 0;
+	max-height:250px;
+	overflow:auto;
+	padding-top:5px;
+	white-space:normal;
+}
+span.quote, .you {
+	color:#3C6D8A;
+}
+.highlighted {
+	background-color:#F0C0B0;
+}
+.spoiler {
+	background-color:#000000;
+}
+	.spoiler:hover {
+		color:#FFFFFF;
+	}
+	
+.border {
+	background-color:#F0E0D6;
+	border:3px dashed #EEAA88;
+	margin:1em;
+	padding:0.5em;
+}
+.highlight {
+	background-color:#FFFF99;
+	font-style:normal;
+	font-weight:700;
+}
+a {
+	color:#800000;
+	text-decoration:none;
+}
+	a strong {
+		text-decoration:underline;
+	}
+	
+.topic_page a {
+	border-color: #800000;
+}
+
+.current_page {
+	color:#800000;
+}
+
+	
+#notice {
+	background-color:#FFFFEE;
+	border:2px solid #EEAA88;
+	padding:0.5em;
+}
+h1 {
+	color:#800000;
+/*	font-family:tahoma;
+	font-size:28px;
+	letter-spacing:-1px; */
+	text-align:center;
+}
+	h1 a {
+		color:#800000;
+		text-decoration:none;
+	}
+h2 {
+	color:#800000;
+	font-family:tahoma;
+	font-size:20px;
+}
+	h2 a:hover {
+		text-decoration:underline;
+	}
+
+h3 {
+	background-color:#EEAA88;
+	color:#521111;
+	font-size:12px;
+	font-weight:400;
+	margin:0;
+	padding:0.5em;
+}
+.reply_id {
+	float:right;
+	text-align:right;
+	vertical-align:middle;
+}
+h4.section {
+	font-size:15px;
+	margin-bottom:7px;
+}
+h4.user {
+	font-size:14px;
+	margin:0 0 0.5em;
+}
+label.common {
+	float:left;
+	padding-right:0.5em;
+	text-align:right;
+	width:15em;
+}
+input, textarea {
+	display:block;
+}
+textarea {
+	font-family:monospace;
+	width:100%;
+}
+input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+	outline:1px solid #FFFFEE;
+}
+fieldset {
+	margin:1em 0;
+}
+ul.body, ul.error_message {
+	list-style-type:none;
+}
+ul.error_message {
+	margin:0;
+	padding:0;
+}
+	ul.error_message li {
+		font-style:italic;
+		padding:0.2em;
+	}
+
+ul.menu {
+	margin:1em;
+	text-align:center;
+}
+	ul.menu li {
+		display:inline;
+		font-weight:700;
+		margin:0 1em;
+	}
+
+ul.stuff {
+	margin-bottom:2em;
+}
+ul.stuff li {
+	margin-bottom:0.5em;
+}
+table {
+	border-collapse:collapse;
+	margin-bottom:1em;
+	width:100%;
+}
+	table th {
+		background-color:#EEAA88;
+		color:#800000;
+		padding:0.5em;
+		text-align:left;
+	}
+	table td {
+		background-color:#F0E0D6;
+		padding:0.5em;
+		vertical-align:top;
+	}
+	table tr.odd td {
+		background-color:#E8D9CF;
+	}
+	table tr:hover td {
+		background-color:#F8E8DE;
+	}
+	table .minimal {
+		white-space:nowrap;
+		width:1%;
+	}
+
+.reply_body_snippet, .snippet {
+	font-style:italic;
+}
+.topic_headline a:visited {
+	font-weight:400;
+}
+.topic_info {
+	cursor:default;
+	float:right;
+}
+em.marked {
+	background-color:#FFFF99;
+	font-style:normal;
+	font-weight:700;
+}
+p.caption {
+	font-size:11px;
+	margin-top:2px;
+}
+.inline {
+	display:inline;
+}
+.last_seen_marker {
+	border-top:2px solid #FFFFEE;
+}
+#snapback_link {
+	left:2px;
+	position:fixed;
+	top:50%;
+}
+.video, video, a.video {
+	clear:both;
+	margin:10px 0;
+}
+.standalone, .row {
+	margin-bottom:1em;
+}
+.body ul.menu li, .body ul.menu li a, .body ul.menu li span, .unimportant, .unimportant * {
+	font-size:10px;
+}
+a:hover, h2 a, #snapback_link a {
+	text-decoration:none;
+}
+a.youtube_alternate, .noscreen {
+	display:none;
+}
+h3#preview, h3#error, h3#replying_to, label, legend, .topic_headline a, .reply_body_snippet a, .snippet a {
+	font-weight:700;
+}
+.help, .help_cursor {
+	cursor:help;
+}

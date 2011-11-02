@@ -1,0 +1,196 @@
+# php_flag magic_quotes_gpc Off
+
+ErrorDocument 403 ' '
+
+# Base rules.
+AddDefaultCharset UTF-8
+ServerSignature Off
+RewriteEngine On
+Options -MultiViews
+
+# Main menu items.
+RewriteRule ^$ index.php?p=1 [L,QSA]
+RewriteRule ^hot_topics$ hot_topics.php [L]
+RewriteRule ^topics/?([0-9]+)?$ index.php?topics=1&p=$1 [L,QSA]
+RewriteRule ^bumps/?([0-9]+)?$ index.php?bumps=1&p=$1 [L]
+RewriteRule ^replies/?([0-9]+)?$ replies.php?p=$1 [L]
+RewriteRule ^new_topic/([a-z0-9]*)$ post.php?token=$1 [L]
+RewriteRule ^new_topic$ post.php [L]
+RewriteRule ^shuffle$ shuffle.php [L]
+RewriteRule ^history/?([0-9]+)?$ history.php?p=$1 [L]
+RewriteRule ^citations$ history.php?citations=1 [L]
+RewriteRule ^watchlist$ watchlist.php [L,QSA]
+RewriteRule ^activity$ activity.php [L]
+RewriteRule ^stuff$ stuff.php [L]
+
+# New reply and topic stuff.
+RewriteRule ^topic/([0-9]+)$ topic.php?id=$1 [L]
+RewriteRule ^topic/([0-9]+)/([0-9]+)$ topic.php?id=$1&page=$2 [L]
+RewriteRule ^topic/([0-9]+)/reply/([0-9]+)$ topic_reply.php?topic=$1&reply=$2 [L]
+RewriteRule ^reply/([0-9]+)$ topic_reply.php?reply=$1 [L]
+RewriteRule ^new_reply/([0-9]+)/([a-z0-9]*)$ post.php?reply=$1&token=$2 [L]
+RewriteRule ^new_reply/([0-9]+)$ post.php?reply=$1 [L]
+RewriteRule ^new_reply/([0-9]+)/quote_topic/([a-z0-9]*)$ post.php?reply=$1&quote_topic=1&token=$2 [L]
+RewriteRule ^new_reply/([0-9]+)/quote_topic$ post.php?reply=$1&quote_topic=1 [L]
+RewriteRule ^new_reply/([0-9]+)/quote_reply/([0-9]+)/([a-z0-9]*)$ post.php?reply=$1&quote_reply=$2&token=$3 [L]
+RewriteRule ^new_reply/([0-9]+)/quote_reply/([0-9]+)$ post.php?reply=$1&quote_reply=$2 [L]
+RewriteRule ^new_reply/([0-9]+)/cite_reply/([0-9]+)/([a-z0-9]*)$ post.php?reply=$1&cite=$2&token=$3 [L]
+RewriteRule ^new_reply/([0-9]+)/cite_reply/([0-9]+)$ post.php?reply=$1&cite=$2 [L]
+RewriteRule ^edit_topic/([0-9]+)/([a-z0-9]*)$ post.php?&edit=$1&token=$2 [L]
+RewriteRule ^edit_topic/([0-9]+)$ post.php?&edit=$1 [L]
+RewriteRule ^edit_reply/([0-9]+)/([0-9]+)/([a-z0-9]*)$ post.php?reply=$1&edit=$2&token=$3 [L]
+RewriteRule ^edit_reply/([0-9]+)/([0-9]+)$ post.php?reply=$1&edit=$2 [L]
+RewriteRule ^watch_topic/([0-9]+)$ action.php?action=watch_topic&id=$1 [L]
+RewriteRule ^unwatch_topic/([0-9]+)$ action.php?action=unwatch_topic&id=$1 [L]
+RewriteRule ^trivia_for_topic/([0-9]+)$ topic_trivia.php?id=$1 [L]
+
+# Bulletins.
+RewriteRule ^bulletins/?([0-9]+)?$ bulletins.php?p=$1 [L]
+RewriteRule ^new_bulletin$ bulletins_new.php [L]
+RewriteRule ^delete_bulletin/([0-9]+)$ action.php?action=delete_bulletin&id=$1 [L]
+
+# Search.
+RewriteRule ^search$ search.php [L]
+RewriteRule ^search/(.+?)/?([0-9]+)?$ search.php?q=$1&p=$2 [L]
+
+# Misc.
+RewriteRule ^dashboard$ dashboard.php [L]
+RewriteRule ^admin_dashboard$ admin_dashboard.php [L]
+RewriteRule ^trash_can$ trash_can.php [L]
+RewriteRule ^statistics$ statistics.php [L]
+RewriteRule ^date_and_time$ date_and_time.php [L]
+RewriteRule ^bans/?([0-9]+)?$ bans.php?p=$1 [L]
+RewriteRule ^defcon$ defcon.php [L]
+RewriteRule ^defcon/([1-5])$ defcon.php?mode=$1 [L]
+RewriteRule ^cast_vote/([0-9]+)$ action.php?action=cast_vote&id=$1 [L]
+RewriteRule ^custom_style/?([0-9]+)?$ style_load.php?modified=$1 [L]
+RewriteRule ^hide_image/([0-9a-z]+)$ action.php?action=hide_image&id=$1 [L]
+RewriteRule ^unhide_image/([0-9a-z]+)$ action.php?action=unhide_image&id=$1 [L]
+
+# Stuff
+RewriteRule ^back_up_ID$ back_up_id.php [L]
+RewriteRule ^generate_ID_card$ back_up_id.php?action=generate_id_card
+RewriteRule ^restore_ID$ restore_id.php [L]
+RewriteRule ^restore_ID/([A-Za-z0-9.]+)/([A-Za-z0-9]+)$ restore_id.php?UID=$1&password=$2 [L]
+RewriteRule ^recover_ID_by_email$ recover_id_by_email.php [L]
+RewriteRule ^drop_ID$ drop_id.php [L]
+RewriteRule ^failed_postings$ failed_postings.php [L]
+RewriteRule ^edit_ignore_list$ edit_ignore_list.php [L]
+RewriteRule ^edit_style$ style_edit.php [L]
+RewriteRule ^view_style/([0-9]+)$ style_view.php?id=$1 [L]
+RewriteRule ^notepad$ notepad.php [L]
+RewriteRule ^The_Oracle$ oracle.php [L]
+
+# Moderation.
+RewriteRule ^profile/([0-9a-zA-Z.]+)/?([0-9]+)?$ profile.php?uid=$1&p=$2 [L]
+RewriteRule ^IP_address/([0-9.]+)$ ip_address.php?ip=$1 [L]
+RewriteRule ^ban$ ban.php [L]
+RewriteRule ^unban_poster/([0-9a-zA-Z.]+)$ action.php?action=unban_uid&id=$1 [L]
+RewriteRule ^unban_IP/([0-9.]+)$ action.php?action=unban_ip&id=$1 [L]
+RewriteRule ^delete_IP_IDs/([0-9.]+)$ action.php?action=delete_ip_ids&id=$1 [L]
+RewriteRule ^nuke_IP/([0-9.]+)$ action.php?action=nuke_ip&id=$1 [L]
+RewriteRule ^nuke_ID/([0-9a-zA-Z.]+)$ action.php?action=nuke_id&id=$1 [L]
+RewriteRule ^exterminate$ exterminate.php [L]
+RewriteRule ^delete_topic/([0-9]+)$ action.php?action=delete_topic&id=$1 [L]
+RewriteRule ^delete_reply/([0-9]+)$ action.php?action=delete_reply&id=$1 [L]
+RewriteRule ^undelete_topic/([0-9]+)$ action.php?action=undelete_topic&id=$1 [L]
+RewriteRule ^undelete_reply/([0-9]+)$ action.php?action=undelete_reply&id=$1 [L]
+RewriteRule ^stick_topic/([0-9]+)$ action.php?action=stick_topic&id=$1 [L]
+RewriteRule ^unstick_topic/([0-9]+)$ action.php?action=unstick_topic&id=$1 [L]
+RewriteRule ^lock_topic/([0-9]+)$ action.php?action=lock_topic&id=$1 [L]
+RewriteRule ^unlock_topic/([0-9]+)$ action.php?action=unlock_topic&id=$1 [L]
+RewriteRule ^delete_image/([0-9]+)$ action.php?action=delete_image&type=topic&id=$1
+RewriteRule ^delete_image/([0-9]+)/([0-9]+)$ action.php?action=delete_image&type=reply&topic=$1&id=$2
+RewriteRule ^mod_log/?([0-9]+)?$ mod_log.php?p=$1 [L]
+RewriteRule ^mod_log/([a-z_]+)/(.+)$ mod_log.php?$1=$2 [L]
+RewriteRule ^report_topic/?([0-9]+)$ report.php?topic=$1 [L]
+RewriteRule ^report_reply/?([0-9]+)$ report.php?reply=$1 [L]
+RewriteRule ^reports$ reports.php [L]
+RewriteRule ^reports$ reports.php [L]
+RewriteRule ^manage_permissions/([0-9a-zA-Z.]+)$ manage_permissions.php?uid=$1 [L]
+
+
+# Content management.
+RewriteRule ^CMS$ cms.php [L]
+RewriteRule ^edit_page/([0-9]+)$ cms_edit.php?edit=$1 [L]
+RewriteRule ^new_page$ cms_edit.php [L]
+RewriteRule ^delete_page/([0-9]+)$ action.php?action=delete_page&id=$1 [L]
+
+# Private messages.
+RewriteRule ^private_messages/?([0-9]+)?$ pm_inbox.php?p=$1 [L]
+RewriteRule ^outbox$ pm_inbox.php?outbox=1 [L]
+RewriteRule ^private_message/([0-9]+)$ pm.php?id=$1 [L]
+RewriteRule ^reply_to_message/([0-9]+)$ pm_compose.php?replyto=$1 [L]
+RewriteRule ^contact_OP/([0-9]+)$ pm_compose.php?topic=$1 [L]
+RewriteRule ^contact_poster/([0-9]+)$ pm_compose.php?reply=$1 [L]
+RewriteRule ^reply_to_message/([0-9]+)$ pm_compose.php?replyto=$1 [L]
+RewriteRule ^compose_message/([0-9a-zA-Z.]+)$ pm_compose.php?to=$1 [L]
+RewriteRule ^appeal_ban$ pm_compose.php [L]
+RewriteRule ^report_PM/([0-9]+)$ pm_compose.php?to=admins&report=$1 [L]
+RewriteRule ^delete_message/([0-9]+)$ action.php?action=delete_pm&id=$1 [L]
+RewriteRule ^ignore_PM/([*0-9]+)$ action.php?action=ignore_pm&id=$1 [L]
+RewriteRule ^unignore_PM/([*0-9]+)$ action.php?action=unignore_pm&id=$1 [L]
+RewriteRule ^dismiss_PM/([0-9]+)$ action.php?action=dismiss_pm&id=$1 [L]
+RewriteRule ^ignored_PMs$ pm_inbox.php?ignored=1 [L]
+RewriteRule ^delete_all_PMs/([0-9a-zA-Z.]+)$ action.php?action=delete_all_pms&id=$1 [L]
+RewriteRule ^dismiss_all_PMs$ action.php?action=dismiss_all_PMs [L]
+
+
+# Custom 404 handler. No, we're not using .htaccess' 404 handler for specific reasons.
+RewriteCond %{SCRIPT_FILENAME} !-f
+RewriteCond %{SCRIPT_FILENAME} !-d
+RewriteRule ^(.+)$ url_handler.php [L]
+
+# Modules.
+<ifModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml application/x-javascript
+</ifModule>
+
+<ifModule mod_gzip.c>
+  mod_gzip_on Yes
+  mod_gzip_dechunk Yes
+  mod_gzip_item_include file \.(html?|txt|css|js|php|pl)$
+  mod_gzip_item_include handler ^cgi-script$
+  mod_gzip_item_include mime ^text/.*
+  mod_gzip_item_include mime ^application/x-javascript.*
+  mod_gzip_item_exclude mime ^image/.*
+  mod_gzip_item_exclude rspheader ^Content-Encoding:.*gzip.*
+</ifModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive on 
+  ExpiresByType image/jpg "access 1 month"
+  ExpiresByType image/jpeg "access 1 month"
+  ExpiresByType image/gif "access 1 month"
+  ExpiresByType image/png "access 1 month"
+  ExpiresByType text/html "access 1 day"
+  ExpiresByType text/javascript "access 1 month"
+  ExpiresByType application/x-javascript "access 1 month"
+  ExpiresByType text/css "access 1 month"
+  ExpiresDefault "access 2 days" 
+</IfModule>
+
+<ifModule mod_headers.c>
+  <FilesMatch "\\.(ico|pdf|flv|jpg|jpeg|png|gif|swf)$">
+    Header set Cache-Control "max-age=2592000, public"
+  </FilesMatch>
+  <FilesMatch "\\.(css)$">
+    Header set Cache-Control "max-age=604800, public"
+    Header set Vary "accept-encoding"
+  </FilesMatch>
+  <FilesMatch "\\.(js)$">
+    Header set Cache-Control "max-age=216000, private"
+  </FilesMatch>
+  <FilesMatch "\\.(xml|txt)$">
+    Header set Cache-Control "max-age=216000, public, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\\.(html|htm|php)$">
+    Header set Cache-Control "max-age=1, private, must-revalidate"
+  </FilesMatch>
+</ifModule>
+
+# Prevent people from opening backup files from editors that could be uploaded by mistake.
+<FilesMatch "\..+~$"> 
+order deny,allow 
+deny from all 
+</FilesMatch>

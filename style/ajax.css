@@ -1,0 +1,148 @@
+body {
+	margin:0;
+	padding:0;
+}
+
+#footer, hr {
+	display:none;
+}
+
+#notice {
+	position:fixed;
+	width:40%;
+	padding:10px;
+	background-image:url('close.png');
+	background-repeat:no-repeat;
+	background-position:top right;
+	margin-left:30%;
+	margin-top:20px;
+	z-index:5;
+	font-size:11px;
+	opacity:0.9;
+	background-color:#dcdaf3;
+	border:2px solid #a4a0c8;
+}
+
+h1, h2 {
+	display:none;
+}
+
+ul#main_menu {
+	position:fixed;
+	top:0px;
+	width:98%;
+	margin:0 1%;
+	padding:0;
+	padding-top:12px;
+	height:33px;
+	font-size:15px;
+	z-index:3;
+	-webkit-border-bottom-left-radius:8px;
+	-webkit-border-bottom-right-radius:8px;
+	-moz-border-radius-bottomleft:8px;
+	-moz-border-radius-bottomright:8px;
+	border-bottom-left-radius:8px;
+	border-bottom-right-radius:8px;
+}
+
+ul#main_menu a {
+	text-decoration:none;
+}
+
+#main_menu li.bumps {display:none;}
+#main_menu li.topics {display:none;}
+#main_menu li.shuffle {display:none;}
+#main_menu li.replies {display:none;}
+#main_menu li.hot_topics {display:none;}
+#main_menu li.events {display:none;}
+
+
+#wrapper {
+	position:fixed;
+	width:100%;
+	top:0;
+	bottom:60px;
+}
+			
+#main_panel,
+#topic_panel {
+	margin-top:60px;
+	border-top:1px solid #ACA6BA;
+}
+
+#main_panel {
+	float:left;
+	margin-left:1%;
+	/* width:44%; */
+	width:98%;
+	border-right:none;
+	position:relative;
+	z-index:1;
+}
+			
+#topic_panel {
+	float:right;
+	overflow:auto;
+	height:100%;
+	margin-right:1%;
+	width:54%;
+	display:none;
+	border-left:none;
+}
+
+	#topic_panel > * {
+		padding-left:10px;
+		padding-right:8px;
+	}
+
+	#topic_panel h2 {
+		display:block;
+		font-size:26px;
+		margin-top:5px;
+		margin-bottom:0;
+		padding-bottom:4px;
+		padding-left:12px;
+		border-bottom:1px solid #baaec2;
+	}
+
+	#topic_panel h3 {
+		margin-left:12px;
+		margin-right:12px;
+		-moz-border-radius-topright:8px;
+		-moz-border-radius-topleft:8px;
+	}
+
+	#topic_panel .body {
+		margin-left:12px;
+		margin-right:12px;
+		margin-bottom:1em;
+		-moz-border-radius-bottomleft:8px;
+		-moz-border-radius-bottomright:8px;
+	}
+
+	#topic_panel .body .menu {
+		display:block;
+	}
+
+	#topic_panel button#hide_topic {
+		float:right;
+		padding:0 1px;
+		margin:2px;
+		display:block;
+	}
+
+table td {
+	font-size:12px;
+}
+
+table .active_topic td:last-child {
+	background-image:url('arrow_left.png');
+	background-repeat:no-repeat;
+	background-position:right center;
+}
+
+table .loading_topic td:last-child {
+	background-image:url('loading.gif');
+	background-repeat:no-repeat;
+	background-position:right center;
+}
