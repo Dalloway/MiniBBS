@@ -79,6 +79,7 @@ else if($_GET['topic'] || $_GET['reply']) {
 		}
 		$destination = $res->fetchColumn();
 		$topic_id = (int) $_GET['topic'];
+		$reply_id = 0;
 		$template->title .= ' for <a href="' . DIR . 'topic/' . $topic_id . '">topic</a> author';
 	} else if(ctype_digit($_GET['reply'])) {
 		$res = $db->q('SELECT author, parent_id FROM replies WHERE id = ?', $_GET['reply']);
@@ -86,6 +87,7 @@ else if($_GET['topic'] || $_GET['reply']) {
 			error::fatal('There is no reply with that ID.');
 		}
 		list($destination, $topic_id) = $res->fetch();
+		$reply_id = $_GET['reply'];
 		$template->title .= ' for <a href="' . DIR . 'topic/' . $topic_id . '#reply_' . $_GET['reply'] . '">reply</a> author';
 	} else {
 		error::fatal('The post ID was not valid.');
@@ -120,10 +122,11 @@ if($_POST['submit']) {
 	
 	if(error::valid()) {
 		// Silently mark this message as ignored if we're on the recipient's ignore list.
+		$ignored = 0;
 		if( ! $perm->is_admin() && ! $perm->is_mod()) {
-			$db->q('SELECT 1 FROM pm_ignorelist WHERE uid = ? AND (ignored_uid = ? OR ignored_uid = \'*\')', $destination, $_SESSION['UID']);
-			if($db->num_rows() > 0) {
-				$message['ignored'] = 1;
+			$res = $db->q('SELECT 1 FROM pm_ignorelist WHERE uid = ? AND (ignored_uid = ? OR ignored_uid = \'*\')', $destination, $_SESSION['UID']);
+			if($res->fetchColumn()) {
+				$ignored = 1;
 			}
 		}
 		
@@ -131,23 +134,12 @@ if($_POST['submit']) {
 			$contents .= "\n\n" . '(This is an appeal of the ban of '.htmlspecialchars($banned).'.)';
 		}
 		
-		
-		$message['source'] = $_SESSION['UID'];
-		$message['destination'] = $destination;
-		$message['name'] = $name;
-		$message['trip'] = $trip;
-		$message['contents'] = $contents;
-		$message['time'] = $_SERVER['REQUEST_TIME'];
-		$message['parent'] = $parent;
-		if(ctype_digit($topic_id)) {
-			$message['topic'] = $topic_id;
-		}
 		$db->q
 		(
 			'INSERT INTO private_messages 
-			(source, destination, name, trip, contents, time, parent, topic) VALUES 
-			(?, ?, ?, ?, ?, ?, ?, ?)',
-			$_SESSION['UID'], $destination, $name, $trip, $contents, $_SERVER['REQUEST_TIME'], $parent, (int) $topic_id
+			(source, destination, name, trip, contents, time, parent, topic, reply, ignored) VALUES 
+			(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+			$_SESSION['UID'], $destination, $name, $trip, $contents, $_SERVER['REQUEST_TIME'], $parent, (int) $topic_id, (int) $reply_id, $ignored
 		);
 	
 		if($new_id = $db->lastInsertId()) {
@@ -168,7 +160,7 @@ if($_POST['submit']) {
 				$notice = 'Private message sent and dismissed.';
 			}
 			// Create new notifications for the PM.
-			if(!$message['ignored']) {
+			if( ! $ignored) {
 				$recipients = array();
 				if($destination == 'mods') {
 					$recipients = $perm->users_with_permission('read_mod_pms');

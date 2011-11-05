@@ -199,6 +199,7 @@ $tables['private_messages'] = "CREATE TABLE IF NOT EXISTS `private_messages` (
   `trip` varchar(12) DEFAULT NULL,
   `ignored` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `topic` int(11) unsigned DEFAULT NULL,
+  `reply` int(11) unsigned NULL,
   PRIMARY KEY (`id`),
   KEY `source` (`source`),
   KEY `destination` (`destination`),
@@ -218,6 +219,7 @@ $tables['replies'] = "CREATE TABLE IF NOT EXISTS `replies` (
   `edit_time` int(10) unsigned DEFAULT NULL,
   `edit_mod` tinyint(1) unsigned DEFAULT NULL,
   `deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `imgur` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `author` (`author`),
   KEY `parent_id` (`parent_id`),
@@ -264,6 +266,7 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
   `poll` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `poll_votes` int(11) unsigned NOT NULL DEFAULT '0',
   `poll_hide` tinyint(1) unsigned DEFAULT '0',
+  `imgur` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `author` (`author`),
   KEY `author_ip` (`author_ip`),
@@ -491,7 +494,8 @@ if(isset($_POST['form_sent'])) {
 			('MIN_BULLETIN_POSTS', '50'),
 			('FLOOD_CONTROL_BULLETINS', '600'),
 			('BULLETINS_ON_INDEX', '2'),
-			('AUTOLOCK', '0')"
+			('AUTOLOCK', '0'),
+			('IMGUR_KEY', '')"
 		) or error::add('Failed to insert config');
 		
 		/* Now create our config file */

@@ -20,9 +20,10 @@ if($perm->is_banned($_SESSION['UID'])) {
 // Select the PM and its children.
 $res = $db->q
 (
-	'SELECT private_messages.id, private_messages.source, private_messages.parent, private_messages.destination, private_messages.contents, private_messages.time, private_messages.name, private_messages.trip, private_messages.topic, private_messages.ignored, topics.headline AS topic_headline 
+	'SELECT private_messages.id, private_messages.source, private_messages.parent, private_messages.destination, private_messages.contents, private_messages.time, private_messages.name, private_messages.trip, private_messages.topic, private_messages.reply, private_messages.ignored, topics.headline AS topic_headline, replies.namefag AS reply_name, replies.tripfag AS reply_trip
 	FROM `private_messages` 
-	LEFT OUTER JOIN `topics` ON private_messages.topic = topics.id 
+	LEFT OUTER JOIN `topics` ON private_messages.topic = topics.id
+	LEFT OUTER JOIN `replies` ON private_messages.reply = replies.id
 	WHERE private_messages.id = ? OR private_messages.parent = ? 
 	ORDER BY private_messages.id', 
 	$_GET['id'], $_GET['id']
@@ -100,8 +101,14 @@ do {
 <?php 
 			echo parser::parse($pm->contents);
 			// If this message was sent via a "PM" link in a topic, provide context.
-			if(!empty($pm->topic_headline)) {
-				echo '<p class="unimportant">(This message was sent via '. ($pm->destination==$_SESSION['UID'] ? 'your' : 'the recipient\'s') .' post in "<strong><a href="'.DIR.'topic/' . $pm->topic . '">' . htmlspecialchars($pm->topic_headline) . '</a></strong>".)</p>';
+			if( ! empty($pm->topic_headline)) {
+				if(empty($pm->reply_name) && empty($pm->reply_trip)) {
+					$reply_author = 'Anonymous';
+				} else {
+					$reply_author = '<strong>' . htmlspecialchars($pm->reply_name) . '</strong> ' . htmlspecialchars($pm->reply_trip);
+				}
+				
+				echo '<p class="unimportant">(This message was sent via '. ($pm->destination==$_SESSION['UID'] ? 'your' : 'the recipient\'s') .' ' . (empty($pm->reply) ? 'original post' : '<a href="'.DIR.'reply/'.$pm->reply.'">reply</a> as ' . $reply_author) . ' in "<strong><a href="'.DIR.'topic/' . $pm->topic . '">' . htmlspecialchars($pm->topic_headline) . '</a></strong>".)</p>';
 			}
 ?>
 

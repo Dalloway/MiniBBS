@@ -23,7 +23,7 @@ function highlightPoster(number) {
 		if (divs[i].className.indexOf('body') != -1) {
 			divs[i].className = divs[i].className.replace(/highlighted/, '');
 		}
-		if (divs[i].className.indexOf('poster_body_' + number) != -1) {
+		if ($(divs[i]).hasClass('poster_body_' + number)) {
 			divs[i].className += ' highlighted';
 		}
 	}
@@ -152,6 +152,31 @@ function play_video ( provider, media_ID, element, record_class, record_ID ) {
         }
         jQuery(element).parent().after(video_player_html + "\n");
         jQuery('#' + my_ID).slideDown();
+}
+
+/* Source: http://hacks.mozilla.org/2011/03/the-shortest-image-uploader-ever/ */
+function imgurUpload(file, apiKey) {
+	/* Is the file an image? */
+	if (!file || !file.type.match(/image.*/)) {
+		return false;
+	}
+
+	/* It is! */
+	document.getElementById('imgur_status').innerHTML = 'Uploading...';
+	
+	var fd = new FormData();
+	fd.append('image', file);
+	fd.append('key', apiKey);
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', 'http://api.imgur.com/2/upload.json');
+	xhr.onload = function() {
+		document.getElementById('imgur').value = JSON.parse(xhr.responseText).upload.links.original;
+		$("#imgur_status").remove();
+	}
+
+	xhr.send(fd);
+	
+	return false;
 }
 
 function init() {

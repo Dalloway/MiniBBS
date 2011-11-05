@@ -62,7 +62,8 @@ $config_defaults = array
 	'MIN_BULLETIN_POSTS' => '50',
 	'FLOOD_CONTROL_BULLETINS' => '600',
 	'BULLETINS_ON_INDEX' => '2',
-	'AUTOLOCK' => '0'
+	'AUTOLOCK' => '0',
+	'IMGUR_KEY' => ''
 );
 
 ?>

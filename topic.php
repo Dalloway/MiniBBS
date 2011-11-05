@@ -15,7 +15,7 @@ if($notifications['citations']) {
 }
 
 /* Fetch OP data. */
-$db->select('topics.time, topics.author, topics.visits, topics.replies, topics.headline, topics.body, topics.edit_time, topics.edit_mod, topics.namefag, topics.tripfag, topics.link, topics.deleted, topics.sticky, topics.locked, topics.poll, topics.poll_votes, topics.poll_hide, topics.last_post')
+$db->select('topics.time, topics.author, topics.visits, topics.replies, topics.headline, topics.body, topics.edit_time, topics.edit_mod, topics.namefag, topics.tripfag, topics.link, topics.deleted, topics.sticky, topics.locked, topics.poll, topics.poll_votes, topics.poll_hide, topics.last_post, topics.imgur')
   ->from('topics')
   ->where('id = ?', $topic_id);
 /* No point joining the images table if images are disabled. */
@@ -83,7 +83,13 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 
 <div class="body poster_body_0">
 <?php
-	if(is_ignored($topic->md5)):
+	if($topic->imgur):
+?>
+	<a href="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>.jpg" class="thickbox">
+		<img src="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>m.jpg" alt="" class="help" title="Externally hosted image" />
+	</a>
+<?php
+	elseif(is_ignored($topic->md5)):
 		$image_ignored = true;
 ?>
 	<div class="unimportant hidden_image">(<strong><a href="<?php echo DIR . 'img/' . htmlspecialchars($topic->file_name) ?>"><?php echo htmlspecialchars($topic->original_name) ?></a></strong> hidden.)</div>
@@ -264,7 +270,7 @@ if($topic->poll) {
 }	
 	
 /* Output replies. */
-$db->select('replies.id, replies.time, replies.author, replies.body, replies.deleted, replies.edit_time, replies.edit_mod, replies.namefag, replies.tripfag, replies.link')
+$db->select('replies.id, replies.time, replies.author, replies.body, replies.deleted, replies.edit_time, replies.edit_mod, replies.namefag, replies.tripfag, replies.link, replies.imgur')
    ->from('replies')
    ->where('replies.parent_id = ?', $topic_id)
    ->order_by('replies.id');
@@ -364,7 +370,7 @@ while( $reply = $replies->fetchObject() ) {
 	$parsed_body = parser::parse($reply->body);
 	
 	/* Linkify citations */
-	$parsed_body = str_replace('@OP', '<span class="unimportant poster_number_0"><a href="#OP">@OP</a></span>', $parsed_body);
+	$parsed_body = str_ireplace('@OP', '<span class="unimportant poster_number_0"><a href="#OP">@OP</a></span>', $parsed_body);
 
 	$citation_count = preg_match_all('/@([0-9,]+)/m', $parsed_body, $citations);
 	$citations = (array) $citations[1];
@@ -433,7 +439,12 @@ while( $reply = $replies->fetchObject() ) {
 	echo '</span><span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
 	'<div class="body poster_body_'.$posters[$reply->author]['number'].'" id="reply_box_' . $reply->id . '">';
 
-	if(is_ignored($reply->md5)) {
+	if($reply->imgur) {
+		echo '<a href="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . '.jpg" class="thickbox">',
+		'<img src="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . 'm.jpg" alt="" class="help" title="Externally hosted image" />',
+		'</a>';
+	}
+	else if(is_ignored($reply->md5)) {
 		$image_ignored = true;
 		echo '<div class="unimportant hidden_image">(<strong><a href="' . DIR . 'img/' . htmlspecialchars($reply->file_name) . '">' . htmlspecialchars($reply->original_name) . '</a></strong> hidden.)</div>';
 	}
@@ -557,6 +568,17 @@ endif;
 if(ALLOW_IMAGES && $perm->get('post_image')):
 ?>
 		<input type="file" name="image" id="image" tabindex="5">
+<?php
+endif;
+
+if(IMGUR_KEY):
+?>
+		<div>
+			<?php if(ALLOW_IMAGES) echo 'Or use an' ?> imgur URL: 
+			<input type="text" name="imgur" id="imgur" class="inline" size="21" placeholder="http://i.imgur.com/wDizy.gif" />
+			<a href="http://imgur.com/" id="imgur_status" onclick="$('#imgur_file').click(); return false;">[upload]</a>
+			<input type="file" id="imgur_file" class="noscreen" onchange="imgurUpload(this.files[0], '<?php echo IMGUR_KEY ?>')" />
+		</div>
 <?php
 endif;
 ?>

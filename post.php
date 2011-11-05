@@ -153,7 +153,7 @@ if ($_POST['form_sent']) {
 		}
 		check_token();
 		
-		if( ! (ALLOW_IMAGES && ! empty($_FILES['image']['name']))) {
+		if(empty($_FILES['image']['name']) && empty($_POST['imgur'])) {
 			check_length($body, 'body', MIN_LENGTH_BODY, MAX_LENGTH_BODY);
 		}
 		
@@ -161,7 +161,8 @@ if ($_POST['form_sent']) {
 		if (count(explode("\n", $body)) > MAX_LINES) {
 			error::add('Your post has too many lines.');
 		}
-
+		
+		$uploading = false;
 		if (ALLOW_IMAGES && ! empty($_FILES['image']['name']) && ! $editing) {
 			$image_data = array();
 			
@@ -235,6 +236,16 @@ if ($_POST['form_sent']) {
 					$image_data['name'] = $image_data['name'] . '.' . $image_data['type'];
 				}
 			}
+		} 
+		
+		$imgur = '';
+		if( ! $uploading && ! empty($_POST['imgur'])) {
+			$_POST['imgur'] = trim($_POST['imgur']);
+			if( ! preg_match('/imgur\.com\/([a-zA-Z0-9]{3,10})/', $_POST['imgur'], $matches)) {
+				error::add('That does not appear to be a valid imgur URL.');
+			} else {
+				$imgur = $matches[1];
+			}
 		}
 		
 		// Set the author (internal use only).
@@ -269,9 +280,9 @@ if ($_POST['form_sent']) {
 					$db->q
 					(
 						'INSERT INTO replies 
-						(author, author_ip, parent_id, body, namefag, tripfag, link, time) VALUES 
-						(?, ?, ?, ?, ?, ?, ?, ?)',
-						$author, $_SERVER['REMOTE_ADDR'], $_GET['reply'], $body, $namefag[0], $namefag[1], $user_link, $_SERVER['REQUEST_TIME']
+						(author, author_ip, parent_id, body, namefag, tripfag, link, time, imgur) VALUES 
+						(?, ?, ?, ?, ?, ?, ?, ?, ?)',
+						$author, $_SERVER['REMOTE_ADDR'], $_GET['reply'], $body, $namefag[0], $namefag[1], $user_link, $_SERVER['REQUEST_TIME'], $imgur
 					);
 					$inserted_id = $db->lastInsertId();
 					$_SESSION['post_count']++;
@@ -369,9 +380,9 @@ if ($_POST['form_sent']) {
 					$db->q
 					(
 						'INSERT INTO topics 
-						(author, author_ip, headline, body, last_post, time, namefag, tripfag, link, sticky, locked, poll, poll_hide) VALUES 
-						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
-						$author, $_SERVER['REMOTE_ADDR'], $headline, $body, $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'], $namefag[0], $namefag[1], $user_link, $sticky, $locked, $poll, $hide_results
+						(author, author_ip, headline, body, last_post, time, namefag, tripfag, link, sticky, locked, poll, poll_hide, imgur) VALUES 
+						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', 
+						$author, $_SERVER['REMOTE_ADDR'], $headline, $body, $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'], $namefag[0], $namefag[1], $user_link, $sticky, $locked, $poll, $hide_results, $imgur
 					);
 					$inserted_id = $db->lastInsertId();
 					if($poll) {
@@ -579,7 +590,19 @@ if($_POST['form_sent']) {
 	if (ALLOW_IMAGES && ! $editing && $perm->get('post_image')) {
 		echo '<label for="image" class="noscreen">Image</label> <input type="file" name="image" id="image" />';
 	}
+	
+
+	if(IMGUR_KEY && ! $editing):
 	?>
+		<div>
+			<?php if(ALLOW_IMAGES) echo 'Or use an' ?> imgur URL: 
+			<input type="text" name="imgur" id="imgur" class="inline" size="21" placeholder="http://i.imgur.com/wDizy.gif" />
+			<a href="http://imgur.com/" id="imgur_status" onclick="$('#imgur_file').click(); return false;">[upload]</a>
+			<input type="file" id="imgur_file" class="noscreen" onchange="imgurUpload(this.files[0], '<?php echo IMGUR_KEY ?>')" />
+		</div>
+<?php
+	endif;
+?>
 		<p>Please familiarize yourself with the <a href="<?php echo DIR; ?>markup_syntax">markup syntax</a> before posting.</p>
 	</div>
 <?php	

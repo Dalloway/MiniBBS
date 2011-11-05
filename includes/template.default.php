@@ -18,7 +18,7 @@ $this->gzhandler();
 	if($_SESSION['settings']['style'] != 'Custom only'): 
 ?>
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?12" />
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?8' ?>" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
 <?php
 	endif;
 	
@@ -42,7 +42,7 @@ $this->gzhandler();
 	endif;
 ?>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?3"></script>
+	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?6"></script>
 <?php
 	echo $this->head
 ?>

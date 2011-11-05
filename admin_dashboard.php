@@ -134,7 +134,7 @@ if(isset($_POST['form_sent'])) {
 	
 <h4 class="section" id="dash_media">Media</h4>
 	<div>
-		<label class="common" for="ALLOW_IMAGES">Allow images</label>
+		<label class="common" for="ALLOW_IMAGES">Allow uploads</label>
 		<input type="checkbox" value="1" id="ALLOW_IMAGES" name="form[ALLOW_IMAGES]" class="inline"<?php if(ALLOW_IMAGES) echo ' checked="checked"' ?> />
 		<p class="caption">Should users be able to upload an image with their post?</p>
 	</div>
@@ -164,6 +164,12 @@ if(isset($_POST['form_sent'])) {
 		<label class="common" for="MAX_GIF_DIMENSIONS">Max GIF thumb dimensions</label>
 		<input type="text" id="MAX_GIF_DIMENSIONS" name="form[MAX_GIF_DIMENSIONS]" class="inline" value="<?php echo htmlspecialchars(MAX_GIF_DIMENSIONS) ?>" size="4" maxlength="6" />
 		<p class="caption">If ImageMagick is enabled, the maximum height or width of a thumbnail for an animated GIF.</p>
+	</div>
+	
+	<div>
+		<label class="common" for="IMGUR_KEY">Imgur API key</label>
+		<input type="text" id="IMGUR_KEY" name="form[IMGUR_KEY]" class="inline" value="<?php echo htmlspecialchars(IMGUR_KEY) ?>" size="57" maxlength="100" />
+		<p class="caption">You can register for an anonymous key <a href="http://imgur.com/register/api_anon">here</a>. When present, users will be able to upload images directly to Imgur (regardless of the "Allow uploads" option above).</p>
 	</div>
 		
 	<div>
