@@ -422,7 +422,7 @@ if(isset($_POST['form_sent'])) {
 		/* Create basic user groups */
 		$db->query
 		(
-			"INSERT INTO `groups` 
+			"INSERT IGNORE INTO `groups` 
 			(`id`, `name`, `link`, `edit_limit`, `post_reply`, `post_topic`, `post_image`, `post_link`, `pm_users`, `pm_mods`, `read_mod_pms`, `read_admin_pms`, `report`, `handle_reports`, `delete`, `undelete`, `edit`, `edit_others`, `view_profile`, `ban`, `stick`, `lock`, `delete_ip_ids`, `nuke_id`, `nuke_ip`, `exterminate`, `cms`, `bulletin`, `defcon`, `defcon_all`, `delete_all_pms`, `admin_dashboard`, `manage_permissions`) VALUES
 			(1, 'user', '', 600, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
 			(2, 'mod', 'mod', 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0),
@@ -436,14 +436,14 @@ if(isset($_POST['form_sent'])) {
 			(".$db->quote($user_id).", 3, ".$db->quote($input['log_name']).")"
 		) or error::add('Failed to set admin privs for first user.');
 		/* Legacy crap */
-		$db->query("INSERT INTO `flood_control` (`setting`, `value`) VALUES ('defcon', '5'), ('search_disabled', '0')") or error::add('Failed flood control insert.');
+		$db->query("INSERT IGNORE INTO `flood_control` (`setting`, `value`) VALUES ('defcon', '5'), ('search_disabled', '0')") or error::add('Failed flood control insert.');
 		/* Mark-up page */
-		$db->query("INSERT INTO `pages` (`id`, `url`, `page_title`, `content`, `markup`) VALUES
+		$db->query("INSERT IGNORE INTO `pages` (`id`, `url`, `page_title`, `content`, `markup`) VALUES
 (1, 'markup_syntax', 'Markup syntax', '<table>\r\n<thead>\r\n<tr>\r\n<th class=\"minimal\">Output</th>\r\n<th>Input</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><em>Italic</em></td>\r\n<td><kbd>''''Italic''''</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><strong>Bold</strong></td>\r\n<td><kbd>''''''Bold''''''</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><span class=\"spoiler\">Spoiler</span> ? <span class=\"unimportant\">Hover over me!</span></td>\r\n<td><kbd>**Spoiler**</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><u>Underline</u></td>\r\n<td><kbd>[u]Underline[/u]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><s>Strikethrough</s></td>\r\n<td><kbd>[s]Strikethrough[/s]</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><span class=\"highlight\">Highlights</span></td>\r\n<td><kbd>[hl]Highlights[/hl]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><h4 class=\"user\">Header</h4></td>\r\n<td><kbd>==Header==</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Quote</span></td>\r\n<td><kbd>> Quote</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><a href=\"http://example.com/\">Link text</a></td>\r\n<td><kbd>[http://example.com/ Link text]</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Block</span><br /><span class=\"quote\"><strong>></strong> quote</span></td>\r\n<td><kbd>[quote]Block<br />quote[/quote]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><div class=\"border\">Bordered text</div></td>\r\n<td><kbd>[border]Bordered text[/border]</kbd> - <span class=\"unimportant\">Use this when quoting from external sources.</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><pre>Code</pre></td>\r\n<td><kbd>[code]Code[/code]</kbd> - <span class=\"unimportant\">Use this when pasting code or ASCII art</span></td></tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><pre style=\"font-family:IPAMonaPGothic,Mona,''MS PGothic'';font-size:16px;\">Shift JIS</pre></td>\r\n<td><kbd>[aa]Shift JIS[/aa]</kbd> - <span class=\"unimportant\">Use for Shift JIS ASCII art</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><div class=\"php\" style=\"background-color:#F0F0F0;border:#E1E1E1;padding:0.5em\"><code><span style=\"color: #000000\">\r\n<span style=\"color: #0000BB\">&lt;?php </span><span style=\"color: #007700\">echo&nbsp;</span><span style=\"color: #DD0000\">''lorem ipsum''</span><span style=\"color: #007700\">;</span><span style=\"color: #0000BB\"> ?&gt;</span></span></div></td>\r\n<td><kbd>[php]&lt;?php echo ''lorem ipsum''; ?>[/php]</kbd> - <span class=\"unimportant\">Use to highlight PHP</span></td></tr>\r\n\r\n</tbody>\r\n</table>', 0)") or error::add('Failed to insert pages.');
 		/* Default config */
 		$db->query
 		(
-			"INSERT INTO `config` (`name`, `value`) VALUES
+			"INSERT IGNORE INTO `config` (`name`, `value`) VALUES
 			('SITE_TITLE', ".$db->quote($input['board_name'])."),
 			('MAILER_ADDRESS', 'noreply@minibbs.org'),
 			('POSTS_PER_PAGE_DEFAULT', '100'),
