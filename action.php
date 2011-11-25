@@ -1,6 +1,7 @@
 <?php
 require './includes/bootstrap.php';
 force_id();
+header('X-Frame-Options: SAMEORIGIN');
 
 if(isset($_POST['confirm'])) {
 	if( ! check_token()) {
@@ -112,6 +113,60 @@ switch($_GET['action']) {
 			else {
 				error::fatal('You\'ve already voted in this poll.');
 			}
+		}
+	break;
+	
+	case 'revert_change':
+		if( ! ctype_digit($_GET['id'])) {
+			error::fatal('Invalid topic ID.');
+		}
+		
+		$id = $_GET['id'];
+		$template->title = 'Revert change';
+		
+		if(isset($_POST['confirm'])) {
+			$res = $db->q('SELECT type, foreign_key, text FROM revisions WHERE id = ?', $id);
+			if( ! $res) {
+				error::fatal('No revision with that ID was found.');
+			}
+			$revision = $res->fetchObject();
+			
+			switch($revision->type) {
+				case 'page':
+					if( ! $perm->get('cms')) {
+						error::fatal(MESSAGE_ACCESS_DENIED);
+					}
+					
+					$previous = $db->q('SELECT content FROM pages WHERE id = ?', $revision->foreign_key);
+					$db->q('UPDATE pages SET content = ? WHERE id = ?', $revision->text, $revision->foreign_key);
+					$redirect = 'CMS';
+				break;
+				
+				case 'topic':
+					if( ! $perm->get('edit_others')) {
+						error::fatal(MESSAGE_ACCESS_DENIED);
+					}
+
+					$previous = $db->q('SELECT body FROM topics WHERE id = ?', $revision->foreign_key);
+					$db->q('UPDATE topics SET body = ? WHERE id = ?', $revision->text, $revision->foreign_key);
+					$redirect = 'topic/' . $revision->foreign_key;
+				break;
+				
+				case 'reply':
+					if( ! $perm->get('edit_others')) {
+						error::fatal(MESSAGE_ACCESS_DENIED);
+					}
+
+					$previous = $db->q('SELECT body FROM replies WHERE id = ?', $revision->foreign_key);
+					$db->q('UPDATE replies SET body = ? WHERE id = ?', $revision->text, $revision->foreign_key);
+					$redirect = 'reply/' . $revision->foreign_key;
+				break;
+			}
+			
+			$unreverted_text = $previous->fetchColumn();
+			$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', $revision->type, $revision->foreign_key, $unreverted_text);
+			log_mod('revert_' . $revision->type, $revision->foreign_key, $db->lastInsertId());
+			redirect('Change reverted.', $redirect);
 		}
 	break;
 	
@@ -257,9 +312,7 @@ switch($_GET['action']) {
 	break;
 	
 	case 'delete_image':
-		if( ! $perm->get('delete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
-		}
+
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid ID.');
 		}
@@ -275,8 +328,26 @@ switch($_GET['action']) {
 			$redirect_to = 'topic/' . $id;
 		}
 		
+		if($type == 'topic') {
+			$res = $db->q('SELECT author, time FROM topics WHERE id = ?', $id);
+		} else {
+			$res = $db->q('SELECT author, time FROM replies WHERE id = ?', $id);
+		}
+		if( ! $res) {
+			error::fatal('There is no post with that ID.');
+		}
+		
+		$post = $res->fetchObject();
+		
 		if(isset($_POST['confirm'])) {
-			log_mod('delete_image', $id);
+			if($perm->get('delete')) {
+				log_mod('delete_image', $id);
+			} else if($post->author != $_SESSION['UID']) {
+				error::fatal('You are not the author of that post.');
+			} else if( $perm->get('edit_limit') != 0 && ($_SERVER['REQUEST_TIME'] - $post->time > $perm->get('edit_limit')) ) {
+				error::fatal('You\'re too late to delete that image.');
+			}
+
 			delete_image($type, $id);
 			redirect('Image deleted.', $redirect_to);
 		}
@@ -298,10 +369,29 @@ switch($_GET['action']) {
 		
 		if(isset($_POST['confirm'])) {
 			log_mod('delete_page', $id);
-			$db->q('DELETE FROM pages WHERE id = ?', $id);
+			$db->q('UPDATE pages SET deleted = 1 WHERE id = ?', $id);
 			redirect('Page deleted.', 'CMS');
 		}
 		
+	break;
+	
+	case 'undelete_page':
+		if( ! $perm->get('cms')) {
+			error::fatal(MESSAGE_ACCESS_DENIED);
+		}
+		
+		if( ! ctype_digit($_GET['id'])) {
+			error::fatal('Invalid ID.');
+		}
+		
+		$id = $_GET['id'];
+		$template->title = 'Undelete page';	
+		
+		if(isset($_POST['confirm'])) {
+			log_mod('undelete_page', $id);
+			$db->q('UPDATE pages SET deleted = 0 WHERE id = ?', $id);
+			redirect('Page restored.', 'CMS');
+		}
 	break;
 	
 	
@@ -324,6 +414,36 @@ switch($_GET['action']) {
 			redirect('Bulletin deleted.', 'bulletins');
 		}
 		
+	break;
+	
+	case 'undo_merge':
+		if( ! $perm->get('merge')) {
+			error::fatal(MESSAGE_ACCESS_DENIED);
+		}
+		
+		if( ! ctype_digit($_GET['id'])) {
+			error::fatal('Invalid ID.');
+		}
+		
+		$id = $_GET['id'];
+		$template->title = 'Undo merge';
+		
+		if(isset($_POST['confirm'])) {
+			$res = $db->q('SELECT id FROM replies WHERE original_parent = ? ORDER BY time ASC LIMIT 1', $id);
+			$merged_op = $res->fetchColumn();
+			
+			if( ! $merged_op) {
+				error::fatal('Could not find any replies with that original parent.');
+			}
+			
+			$db->q('DELETE FROM replies WHERE id = ?', $merged_op);
+			$db->q('UPDATE images SET topic_id = ? WHERE reply_id = ?', $id, $merged_op);
+			$db->q('UPDATE replies SET parent_id = original_parent, original_parent = null WHERE original_parent = ?', $id);
+			$db->q('UPDATE topics SET deleted = 0 WHERE id = ?', $id);
+			
+			log_mod('unmerge', $id);
+			redirect('Topic unmerged.', 'topic/' . $id);
+		}
 	break;
 		
 	case 'unban_uid':

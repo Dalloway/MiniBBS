@@ -143,10 +143,9 @@ while($topic = $res->fetchObject()) {
 		$headline = '<em class="help" title="New reply to your reply inside!">' . $headline . '</em>';
 	}
 	
-	/* snippet() is slow, so let's not run it unnecessarily */
-	$snippet = '';
-	if($_SESSION['settings']['spoiler_mode']) {
-		$snippet = parser::snippet($topic->body);
+	$snippet = parser::snippet($topic->body);
+	if( ! $_SESSION['settings']['spoiler_mode'] && ! MOBILE_MODE) {
+		$headline = '<span title="' . $snippet . '">'.$headline.'</span>';
 	}
 		
 	/* Process the values for this row of our table. */

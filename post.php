@@ -163,7 +163,7 @@ if ($_POST['form_sent']) {
 		}
 		
 		$uploading = false;
-		if (ALLOW_IMAGES && ! empty($_FILES['image']['name']) && ! $editing) {
+		if (ALLOW_IMAGES && ! empty($_FILES['image']['name'])) {
 			$image_data = array();
 			
 			switch ($_FILES['image']['error']) {
@@ -233,7 +233,7 @@ if ($_POST['form_sent']) {
 					error::add('Uploaded images can be no greater than ' . round(MAX_IMAGE_SIZE / 1048576, 2) . ' MB. ');
 				} else {
 					$uploading = true;
-					$image_data['name'] = $image_data['name'] . '.' . $image_data['type'];
+					$image_data['name'] = $image_data['name'] . '.' . $image_data['type'];			
 				}
 			}
 		} 
@@ -253,7 +253,7 @@ if ($_POST['form_sent']) {
 		
 		// If this is a reply.
 		if ($reply) {
-			if (!$editing) {
+			if ( ! $editing) {
 
 			// Check if topic is locked, if so deny posting, except for admins and mods.
 			if($locked != 0 && ! $perm->get('lock')) {
@@ -285,7 +285,6 @@ if ($_POST['form_sent']) {
 						$author, $_SERVER['REMOTE_ADDR'], $_GET['reply'], $body, $namefag[0], $namefag[1], $user_link, $_SERVER['REQUEST_TIME'], $imgur
 					);
 					$inserted_id = $db->lastInsertId();
-					$_SESSION['post_count']++;
 				
 					// Notify cited posters.
 					if(strpos($body, '@OP') !== false) {
@@ -310,7 +309,8 @@ if ($_POST['form_sent']) {
 				if(error::valid()) {
 					$db->q('UPDATE replies SET body = ?, edit_mod = ?, edit_time = ? WHERE id = ?', $body, $edit_mod, $_SERVER['REQUEST_TIME'], $_GET['edit']);
 					if($edit_mod) {
-						log_mod('edit_reply', $_GET['edit']);
+						$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', 'reply', $_GET['edit'], $edit_data['body']);
+						log_mod('edit_reply', $_GET['edit'], $db->lastInsertId());
 					}
 					$congratulation = 'Reply edited.';
 				}
@@ -326,7 +326,7 @@ if ($_POST['form_sent']) {
 				
 				// Flood control.
 				$too_early = $_SERVER['REQUEST_TIME'] - FLOOD_CONTROL_TOPIC;
-				$res       = $db->q('SELECT 1 FROM topics WHERE author_ip = ? AND time > ?', $_SERVER['REMOTE_ADDR'], $too_early);
+				$res = $db->q('SELECT 1 FROM topics WHERE author_ip = ? AND time > ?', $_SERVER['REMOTE_ADDR'], $too_early);
 				
 				if ($res->fetchColumn()) {
 					error::add('Wait at least ' . FLOOD_CONTROL_TOPIC . ' seconds before creating another topic. ');
@@ -390,7 +390,6 @@ if ($_POST['form_sent']) {
 							$db->q('INSERT INTO poll_options (`parent_id`, `option`) VALUES (?, ?)', $inserted_id, $option);
 						}
 					}
-					$_SESSION['post_count']++;
 					$congratulation = 'Topic created.';
 				}
 				
@@ -399,7 +398,8 @@ if ($_POST['form_sent']) {
 					$res = $db->q('UPDATE topics SET headline = ?, body = ?, edit_mod = ?, edit_time = ? WHERE id = ?', $headline, $body, $edit_mod, $_SERVER['REQUEST_TIME'], $_GET['edit']);
 					$congratulation = 'Topic edited.';
 					if($edit_mod) {
-						log_mod('edit_topic', $_GET['edit']);
+						$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', 'topic', $_GET['edit'], $edit_data['body']);
+						log_mod('edit_topic', $_GET['edit'], $db->lastInsertId());
 					}
 				}
 			}
@@ -409,31 +409,27 @@ if ($_POST['form_sent']) {
 		if (error::valid()) {
 			
 			// We did it!
-			if (!$editing) {
+			if ( ! $editing) {
+				$raw_name = (isset($_POST['name']) ? super_trim($_POST['name']) : '');
+				$db->q('UPDATE users SET post_count = post_count + 1, namefag = ? WHERE uid = ?', $raw_name, $_SESSION['UID']);
+				$_SESSION['post_count']++;
+				$_SESSION['poster_name'] = $raw_name;
+
 				setcookie('last_bump', time(), $_SERVER['REQUEST_TIME'] + 315569260, '/');
+				
 				if ($reply) {
 					// Update last bump.
 					$db->q("UPDATE last_actions SET time = ? WHERE feature = 'last_bump'", $_SERVER['REQUEST_TIME']);
 					$db->q('UPDATE topics SET replies = replies + 1, last_post = ? WHERE id = ?', $_SERVER['REQUEST_TIME'], $_GET['reply']);
+					
+					$target_topic = $_GET['edit'];
+					$redir_loc    = $_GET['reply'] . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $inserted_id;
 				} else { // If topic.
 					// Do not change the time() below to REQUEST_TIME. The script execution may have taken a second.
 					setcookie('last_topic', time(), $_SERVER['REQUEST_TIME'] + 315569260, '/');
 					// Update last topic and last bump, for people using the "date created" order option in the dashboard.
 					$db->q("UPDATE last_actions SET time = ? WHERE feature = 'last_topic' OR feature = 'last_bump'", $_SERVER['REQUEST_TIME']);
-				}
-			}
-			
-			$rawnamefag = (isset($_POST['name'])) ? super_trim($_POST['name']) : '';
-			if( ! $editing) {
-				$db->q('UPDATE users SET namefag = ? WHERE uid = ?', $rawnamefag, $_SESSION['UID']);
-				$_SESSION['poster_name'] = $rawnamefag;
-			}
-			// Sort out what topic we're affecting and where to go next. Needs to be trimmed.
-			if (!$editing) {
-				if ($reply) {
-					$target_topic = $_GET['edit'];
-					$redir_loc    = $_GET['reply'] . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $inserted_id;
-				} else { // If topic.
+					
 					$target_topic = $inserted_id;
 					$redir_loc    = $inserted_id;
 				}
@@ -441,8 +437,7 @@ if ($_POST['form_sent']) {
 				if ($reply) {
 					$target_topic = $_GET['reply'];
 					$redir_loc    = $_GET['reply'] . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $_GET['edit'];
-				} else // If topic.
-					{
+				} else { // If topic.
 					$target_topic = $_GET['edit'];
 					$redir_loc    = $_GET['edit'];
 				}
@@ -462,10 +457,17 @@ if ($_POST['form_sent']) {
 					move_uploaded_file($_FILES['image']['tmp_name'], 'img/' . $image_data['name']);
 				}
 				
-				if ($reply) {
-					$db->q('INSERT INTO images (file_name, original_name, md5, reply_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $inserted_id);
+				if($editing) {
+					delete_image($reply ? 'reply' : 'topic', $_GET['edit']);
+					$image_target = $_GET['edit'];
 				} else {
-					$db->q('INSERT INTO images (file_name, original_name, md5, topic_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $inserted_id);
+					$image_target = $inserted_id;
+				}
+
+				if ($reply) {
+					$db->q('INSERT INTO images (file_name, original_name, md5, reply_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $image_target);
+				} else {
+					$db->q('INSERT INTO images (file_name, original_name, md5, topic_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $image_target);
 				}
 			}
 			
@@ -474,13 +476,10 @@ if ($_POST['form_sent']) {
 				$db->q('INSERT INTO watchlists (uid, topic_id) VALUES (?, ?)', $_SESSION['UID'], $target_topic);
 			}
 			
-			// The random stuff is only good for one post to prevent spambots from reusing the same form data again and again.
-			unset($_SESSION['random_posting_hashes']);
 			// Set the congratulation notice and redirect to affected topic or reply.
 			redirect($congratulation, 'topic/' . $redir_loc);
 			
 		} else { // If we got an error, insert this into failed postings.
-			
 			if ($reply) {
 				$db->q('INSERT INTO failed_postings (time, uid, reason, body) VALUES (?, ?, ?, ?)', $_SERVER['REQUEST_TIME'], $_SESSION['UID'], serialize(error::$errors), substr($body, 0, MAX_LENGTH_BODY));
 			} else {
@@ -501,7 +500,7 @@ if (ctype_digit($_POST['start_time'])) {
 echo '<div>';
 
 // Check if OP.
-if ($reply && !$editing) {
+if ($reply && ! $editing) {
 	echo '<p>You <strong>are';
 	if ($_SESSION['UID'] !== $topic_author) {
 		echo ' not';
@@ -587,7 +586,7 @@ if($_POST['form_sent']) {
 	}
 	echo '</textarea>';
 
-	if (ALLOW_IMAGES && ! $editing && $perm->get('post_image')) {
+	if (ALLOW_IMAGES && $perm->get('post_image')) {
 		echo '<label for="image" class="noscreen">Image</label> <input type="file" name="image" id="image" />';
 	}
 	

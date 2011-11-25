@@ -24,7 +24,7 @@ if (is_array($_POST['rejects'])) {
 
 echo '<form id="watchlist" name="watch_list" action="" method="post">';
 
-$res = $db->q('SELECT watchlists.topic_id AS id, topics.headline, topics.replies, topics.visits, topics.time FROM watchlists INNER JOIN topics ON watchlists.topic_id = topics.id WHERE watchlists.uid = ? ORDER BY watchlists.new_replies DESC, topics.last_post DESC', $_SESSION['UID']);
+$res = $db->q('SELECT watchlists.topic_id AS id, watchlists.new_replies, topics.headline, topics.replies, topics.visits, topics.time FROM watchlists INNER JOIN topics ON watchlists.topic_id = topics.id WHERE watchlists.uid = ? ORDER BY watchlists.new_replies DESC, topics.last_post DESC', $_SESSION['UID']);
 
 $master_checkbox = '<input type="checkbox" name="master_checkbox" class="inline" onclick="checkAll(\'watchlist\')" title="Check/uncheck all" />';
 $columns = array
@@ -37,7 +37,10 @@ $columns = array
 $topics = new Table($columns, 0);
 $topics->add_td_class(0, 'topic_headline');
 
+$new_items = false;
 while ($topic = $res->fetchObject()) {
+	$row_class = '';
+
 	$values = array
 	(
 		'<input type="checkbox" name="rejects[]" value="' . $topic->id . '" class="inline" onclick="highlightRow(this)" /> <a href="'.DIR.'topic/' . $topic->id . '">' . htmlspecialchars($topic->headline) . '</a>',
@@ -46,7 +49,14 @@ while ($topic = $res->fetchObject()) {
 		'<span class="help" title="' . format_date($topic->time) . '">' . age($topic->time) . '</span>'
 	);
 	
-	$topics->row($values);
+	if($topic->new_replies) {
+		$new_items = true;
+	} else if($new_items) {
+		$row_class = 'last_seen_marker';
+		$new_items = false;
+	}
+
+	$topics->row($values, $row_class);
 }
 $num_topics_fetched = $topics->row_count;
 $topics->output('You haven\'t watched any topics yet. Once you do, you can keep track of their latest replies here.');

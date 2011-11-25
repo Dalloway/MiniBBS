@@ -20,13 +20,15 @@ if($_GET['edit']) {
 		error::fatal('Invalid page ID.');
 	}
 	
-	$res = $db->q('SELECT url, page_title, content, markup FROM pages WHERE id = ?', $_GET['edit']);
+	$res = $db->q('SELECT url, page_title AS title, content, markup FROM pages WHERE id = ?', $_GET['edit']);
 	if( ! $res) {
 		$template->title = 'Non-existent page';
 		error::fatal('There is no page with that ID.');
 	}
+	$original_data = $res->fetch(PDO::FETCH_ASSOC);;
+	
 	if( ! $_POST['form_sent']) {
-		list($page_data['url'], $page_data['title'], $page_data['content'], $page_data['markup']) = $res->fetch();
+		$page_data = $original_data;
 	}
 	$editing = true;
 	$template->title = 'Editing page: <a href="' . DIR . $page_data['url'] . '">' . htmlspecialchars($page_data['title']) . '</a>';
@@ -47,9 +49,11 @@ if($_POST['post']) {
 	if(error::valid()) {
 		$page_data['content'] = str_replace('&#47;textarea', '/textarea', $page_data['content']);
 		if ($editing) {
+			$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', 'page', $page_data['id'], $original_data['content']);
+			$revision_id = $db->lastInsertId();
 			$db->q('UPDATE pages SET url = ?, page_title = ?, content = ?, markup = ? WHERE id = ?', $page_data['url'], $page_data['title'], $page_data['content'], $page_data['markup'], $page_data['id']);
 			$notice = 'Page successfully edited.';
-			log_mod('cms_edit', $page_data['url']);
+			log_mod('cms_edit', $page_data['url'], $revision_id);
 		} else { // New page.
 			$add_page = $db->q('INSERT INTO pages (url, page_title, content, markup) VALUES (?, ?, ?, ?)', $page_data['url'], $page_data['title'], $page_data['content'], $page_data['markup']);
 			$notice = 'Page successfully created.';

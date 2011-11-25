@@ -94,6 +94,7 @@ $tables['groups'] = "CREATE TABLE IF NOT EXISTS `groups` (
   `delete_all_pms` tinyint(1) unsigned NOT NULL,
   `admin_dashboard` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `manage_permissions` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `merge` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -153,6 +154,7 @@ $tables['pages'] = "CREATE TABLE IF NOT EXISTS `pages` (
   `page_title` varchar(200) NOT NULL,
   `content` text NOT NULL,
   `markup` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `deleted` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `url` (`url`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -220,6 +222,7 @@ $tables['replies'] = "CREATE TABLE IF NOT EXISTS `replies` (
   `edit_mod` tinyint(1) unsigned DEFAULT NULL,
   `deleted` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `imgur` varchar(10) DEFAULT NULL,
+  `original_parent` INT(11) UNSIGNED NULL,
   PRIMARY KEY (`id`),
   KEY `author` (`author`),
   KEY `parent_id` (`parent_id`),
@@ -284,6 +287,7 @@ $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (
   `topic_visits` text NOT NULL,
   `ip_address` varchar(39) CHARACTER SET utf8 NOT NULL,
   `namefag` text CHARACTER SET utf8 NOT NULL,
+  `post_count` INT(7) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`),
   KEY `ip_address` (`ip_address`,`first_seen`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -330,6 +334,14 @@ $tables['whitelist'] = "CREATE TABLE IF NOT EXISTS `whitelist` (
   `uid` char(23) CHARACTER SET utf8 NOT NULL,
   UNIQUE KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
+
+$tables['revisions'] = "CREATE TABLE IF NOT EXISTS `revisions` (
+  `id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT ,
+  `type` VARCHAR( 20 ) NOT NULL ,
+  `foreign_key` INT( 11 ) UNSIGNED NOT NULL ,
+  `text` TEXT NOT NULL ,
+  PRIMARY KEY ( `id` )
+) ENGINE = MYISAM DEFAULT CHARSET=utf8;";
 
 /* Set-up the environment */
 define('SITE_ROOT', realpath(dirname(__FILE__)));
@@ -423,10 +435,10 @@ if(isset($_POST['form_sent'])) {
 		$db->query
 		(
 			"INSERT IGNORE INTO `groups` 
-			(`id`, `name`, `link`, `edit_limit`, `post_reply`, `post_topic`, `post_image`, `post_link`, `pm_users`, `pm_mods`, `read_mod_pms`, `read_admin_pms`, `report`, `handle_reports`, `delete`, `undelete`, `edit`, `edit_others`, `view_profile`, `ban`, `stick`, `lock`, `delete_ip_ids`, `nuke_id`, `nuke_ip`, `exterminate`, `cms`, `bulletin`, `defcon`, `defcon_all`, `delete_all_pms`, `admin_dashboard`, `manage_permissions`) VALUES
-			(1, 'user', '', 600, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0),
-			(2, 'mod', 'mod', 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0),
-			(3, 'admin', 'admin', 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)"
+			(`id`, `name`, `link`, `edit_limit`, `post_reply`, `post_topic`, `post_image`, `post_link`, `pm_users`, `pm_mods`, `read_mod_pms`, `read_admin_pms`, `report`, `handle_reports`, `delete`, `undelete`, `edit`, `edit_others`, `view_profile`, `ban`, `stick`, `lock`, `delete_ip_ids`, `nuke_id`, `nuke_ip`, `exterminate`, `cms`, `bulletin`, `defcon`, `defcon_all`, `delete_all_pms`, `admin_dashboard`, `manage_permissions`, `merge`) VALUES
+			(1, 'user', '', 600, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0),
+			(2, 'mod', 'mod', 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1),
+			(3, 'admin', 'admin', 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)"
 		) or error::add('Failed to create user groups.');
 		/* Set admin privs */
 		$db->query
@@ -439,7 +451,7 @@ if(isset($_POST['form_sent'])) {
 		$db->query("INSERT IGNORE INTO `flood_control` (`setting`, `value`) VALUES ('defcon', '5'), ('search_disabled', '0')") or error::add('Failed flood control insert.');
 		/* Mark-up page */
 		$db->query("INSERT IGNORE INTO `pages` (`id`, `url`, `page_title`, `content`, `markup`) VALUES
-(1, 'markup_syntax', 'Markup syntax', '<table>\r\n<thead>\r\n<tr>\r\n<th class=\"minimal\">Output</th>\r\n<th>Input</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><em>Italic</em></td>\r\n<td><kbd>''''Italic''''</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><strong>Bold</strong></td>\r\n<td><kbd>''''''Bold''''''</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><span class=\"spoiler\">Spoiler</span> ? <span class=\"unimportant\">Hover over me!</span></td>\r\n<td><kbd>**Spoiler**</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><u>Underline</u></td>\r\n<td><kbd>[u]Underline[/u]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><s>Strikethrough</s></td>\r\n<td><kbd>[s]Strikethrough[/s]</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><span class=\"highlight\">Highlights</span></td>\r\n<td><kbd>[hl]Highlights[/hl]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><h4 class=\"user\">Header</h4></td>\r\n<td><kbd>==Header==</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Quote</span></td>\r\n<td><kbd>> Quote</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><a href=\"http://example.com/\">Link text</a></td>\r\n<td><kbd>[http://example.com/ Link text]</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Block</span><br /><span class=\"quote\"><strong>></strong> quote</span></td>\r\n<td><kbd>[quote]Block<br />quote[/quote]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><div class=\"border\">Bordered text</div></td>\r\n<td><kbd>[border]Bordered text[/border]</kbd> - <span class=\"unimportant\">Use this when quoting from external sources.</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><pre>Code</pre></td>\r\n<td><kbd>[code]Code[/code]</kbd> - <span class=\"unimportant\">Use this when pasting code or ASCII art</span></td></tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><pre style=\"font-family:IPAMonaPGothic,Mona,''MS PGothic'';font-size:16px;\">Shift JIS</pre></td>\r\n<td><kbd>[aa]Shift JIS[/aa]</kbd> - <span class=\"unimportant\">Use for Shift JIS ASCII art</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><div class=\"php\" style=\"background-color:#F0F0F0;border:#E1E1E1;padding:0.5em\"><code><span style=\"color: #000000\">\r\n<span style=\"color: #0000BB\">&lt;?php </span><span style=\"color: #007700\">echo&nbsp;</span><span style=\"color: #DD0000\">''lorem ipsum''</span><span style=\"color: #007700\">;</span><span style=\"color: #0000BB\"> ?&gt;</span></span></div></td>\r\n<td><kbd>[php]&lt;?php echo ''lorem ipsum''; ?>[/php]</kbd> - <span class=\"unimportant\">Use to highlight PHP</span></td></tr>\r\n\r\n</tbody>\r\n</table>', 0)") or error::add('Failed to insert pages.');
+(1, 'markup_syntax', 'Markup syntax', '<table>\r\n<thead>\r\n<tr>\r\n<th class=\"minimal\">Output</th>\r\n<th>Input</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><em>Italic</em></td>\r\n<td><kbd>''''Italic''''</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><strong>Bold</strong></td>\r\n<td><kbd>''''''Bold''''''</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><span class=\"spoiler\">Spoiler</span> ? <span class=\"unimportant\">Hover over me!</span></td>\r\n<td><kbd>**Spoiler**</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><u>Underline</u></td>\r\n<td><kbd>[u]Underline[/u]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><s>Strikethrough</s></td>\r\n<td><kbd>[s]Strikethrough[/s]</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><span class=\"highlight\">Highlights</span></td>\r\n<td><kbd>[hl]Highlights[/hl]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><h4 class=\"user\">Header</h4></td>\r\n<td><kbd>==Header==</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Quote</span></td>\r\n<td><kbd>> Quote</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><a href=\"http://example.com/\">Link text</a></td>\r\n<td><kbd>[http://example.com/ Link text]</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Block</span><br /><span class=\"quote\"><strong>></strong> quote</span></td>\r\n<td><kbd>[quote]Block<br />quote[/quote]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><div class=\"border\">Bordered text</div></td>\r\n<td><kbd>[border]Bordered text[/border]</kbd> - <span class=\"unimportant\">Use this when quoting from external sources.</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><pre>Code</pre></td>\r\n<td><kbd>[code]Code[/code]</kbd> - <span class=\"unimportant\">Use this when pasting code or ASCII art</span></td></tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><pre style=\"font-family:IPAMonaPGothic,Mona,''MS PGothic'';font-size:16px;\">Shift JIS</pre></td>\r\n<td><kbd>[aa]Shift JIS[/aa]</kbd> - <span class=\"unimportant\">Use for Shift JIS ASCII art</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><div class=\"php\" style=\"background-color:#F0F0F0;border:#E1E1E1;padding:0.5em\"><code><span style=\"color: #000000\">\r\n<span style=\"color: #0000BB\">&lt;?php </span><span style=\"color: #007700\">echoÂ </span><span style=\"color: #DD0000\">''lorem ipsum''</span><span style=\"color: #007700\">;</span><span style=\"color: #0000BB\"> ?></span></span></div></td>\r\n<td><kbd>[php]&lt;?php echo ''lorem ipsum''; ?>[/php]</kbd> - <span class=\"unimportant\">Use to highlight PHP</span></td></tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\">[noparse]''''''not [s]parsed[/s]''''''[/noparse]</td>\r\n<td><kbd>''''''not [s]parsed[/s]''''''</kbd></td>\r\n</tr>\r\n\r\n</tbody>\r\n</table>', 0)") or error::add('Failed to insert pages.');
 		/* Default config */
 		$db->query
 		(

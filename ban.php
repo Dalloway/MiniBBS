@@ -44,8 +44,21 @@ if ( ! empty($_POST['target'])) {
 		
 	if(error::valid()) {
 		$db->q('INSERT IGNORE INTO bans (target) VALUES (?)', $_POST['target']);
-		cache::clear('bans');
 		log_mod('ban_'.$type, $_POST['target'], $ban_expiry, $_POST['reason']);
+		
+		/* Ban last IP of UID */
+		if($type == 'uid' && isset($_POST['autoban_ip'])) {
+			$res = $db->q('SELECT author_ip FROM replies WHERE author = ? ORDER BY time DESC LIMIT 1', $_POST['target']);
+			$last_ip = $res->fetchColumn();
+			if($last_ip && ! $perm->is_banned($last_ip)) {
+				$db->q('INSERT IGNORE INTO bans (target) VALUES (?)', $last_ip);
+				log_mod('ban_ip', $last_ip, $ban_expiry, trim($_POST['reason'] . ' (autoban)'));
+			} else {
+				unset($last_ip);
+			}
+		}
+		
+		cache::clear('bans');
 		
 		/* Notify the affected user of their ban */
 		if(ALLOW_BAN_READING) {
@@ -73,7 +86,7 @@ if ( ! empty($_POST['target'])) {
 			}
 		}
 		
-		redirect($_POST['target'] . ' banned.', ($type == 'ip' ? 'IP_address' : 'profile') . '/' . $_POST['target'] );
+		redirect($_POST['target'] . (isset($last_ip) ? ' and ' . $last_ip : '') . ' banned.', ($type == 'ip' ? 'IP_address' : 'profile') . '/' . $_POST['target'] );
 	}
 
 	error::output();

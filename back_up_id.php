@@ -5,7 +5,7 @@ force_id();
 $template->title = 'Back up ID';
 if ($_GET['action'] === 'generate_id_card') {
 	header('Content-type: text/plain');
-	header('Content-Disposition: attachment; filename="TinyBBS_ID.crd"');
+	header('Content-Disposition: attachment; filename="' . rawurlencode(SITE_TITLE) . '_ID.crd"');
 	echo $_SESSION['UID'] . "\n" . $_COOKIE['password'];
 	exit;
 } else {

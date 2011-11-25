@@ -150,6 +150,11 @@ form#poll {
 	text-decoration:none;
 }
 
+.merge_marker {
+	text-decoration:none;
+	margin-left:.3em;
+}
+
 .body {
 	line-height:1.5em;
 	overflow:hidden;

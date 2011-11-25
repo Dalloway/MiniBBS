@@ -66,7 +66,7 @@ class Template {
 		if($template === false) {
 			echo $this->content;
 		} else {
-			require 'includes/template.' . $template . '.php';
+			require SITE_ROOT . '/includes/template.' . $template . '.php';
 		}
 		
 		exit();

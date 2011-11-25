@@ -17,7 +17,7 @@ function check_user_agent($type) {
 	$user_agent = strtolower($_SERVER['HTTP_USER_AGENT']);
 	if($type == 'bot') {
 		// Matches popular bots
-		if(preg_match('/googlebot|adsbot|yahooseeker|yahoobot|msnbot|watchmouse|pingdom\.com|feedfetcher-google/', $user_agent)) {
+		if(preg_match('/googlebot|adsbot|yahooseeker|yahoobot|bingbot|watchmouse|pingdom\.com|feedfetcher-google/', $user_agent)) {
 			return true;
 		}
 	} else if($type == 'mobile') {
@@ -123,8 +123,8 @@ function activate_id($uid, $password) {
 		return true;
 	}
 	
-	$res = $db->q('SELECT password, first_seen, topic_visits, namefag FROM users WHERE uid = ?', $uid);
-	list($db_password, $first_seen, $topic_visits, $name) = $res->fetch();
+	$res = $db->q('SELECT password, first_seen, topic_visits, namefag, post_count FROM users WHERE uid = ?', $uid);
+	list($db_password, $first_seen, $topic_visits, $name, $post_count) = $res->fetch();
 	
 	if( ! empty($db_password) && $password === $db_password) {
 		// The password is correct!
@@ -137,12 +137,7 @@ function activate_id($uid, $password) {
 		$_SESSION['poster_name'] = $name;
 		// Turn topic visits into an array
 		$_SESSION['topic_visits'] = json_decode($topic_visits, true);
-		// Get post count
-		$res = $db->q("SELECT COUNT(*) FROM replies WHERE author = ? AND deleted = '0'", $_SESSION['UID']);
-		$num_topics = $res->fetchColumn();
-		$res = $db->q("SELECT COUNT(*) FROM topics WHERE author = ? AND deleted = '0'", $_SESSION['UID']);
-		$num_replies = $res->fetchColumn();
-		$_SESSION['post_count'] = $num_topics + $num_replies;
+		$_SESSION['post_count'] = $post_count;
 		
 		// Set cookie
 		if($_COOKIE['UID'] !== $_SESSION['UID']) {
@@ -757,7 +752,13 @@ function log_mod($action, $target, $param = '', $reason = '') {
 		case 'cms_new':
 		case 'cms_edit':
 		case 'delete_page':
+		case 'undelete_page':
 			$type = 'cms';
+		break;
+		
+		case 'merge':
+		case 'unmerge':
+			$type = 'merge';
 		break;
 		
 		default:

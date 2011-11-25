@@ -39,19 +39,20 @@ $db->group_by('`parent`')
 $res = $db->exec();
 
 // Print the table.
-$columns = array(	
-	'Snippet',
+$columns = array(
 	($_GET['outbox'] ? 'Recipient' : 'Author'),
+	'Snippet',
 	'Age ▼'
 );
 if($perm->get('delete')) {
 	$columns[] = 'Delete';
 }
-$pms = new Table($columns, 0);
+$pms = new Table($columns, 1);
+$pms->add_td_class(1, 'snippet');
 
 while( $pm = $res->fetchObject() ) {
 	$values = array();
-	$values[] = '<a href="' . DIR . 'private_message/'.$pm->parent. ($new_pm != $new_parent ? '#reply_'.$new_pm : '') .'">' . parser::snippet($pm->contents) . '</a>';
+
 	// If we're using the outbox, determine what should be in the "Recipient" field.
 	if($_GET['outbox']) {
 		if($pm->destination == 'mods' || $pm->destination == 'admins') {
@@ -78,7 +79,11 @@ while( $pm = $res->fetchObject() ) {
 		}
 	}
 	$values[] = $author;
+	
+	$values[] = '<a href="' . DIR . 'private_message/'.$pm->parent. ($new_pm != $new_parent ? '#reply_'.$new_pm : '') .'">' . parser::snippet($pm->contents) . '</a>';
+	
 	$values[] = '<span class="help" title="' . format_date($pm->time) . '">' . age($pm->time) . '</span>';
+	
 	if($perm->get('delete')) {
 		$values[] = '<a href="' . DIR . 'delete_message/' . $pm->parent . '">✘</a>';
 	}

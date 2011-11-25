@@ -108,13 +108,16 @@ RewriteRule ^report_reply/?([0-9]+)$ report.php?reply=$1 [L]
 RewriteRule ^reports$ reports.php [L]
 RewriteRule ^reports$ reports.php [L]
 RewriteRule ^manage_permissions/([0-9a-zA-Z.]+)$ manage_permissions.php?uid=$1 [L]
-
+RewriteRule ^merge/?([0-9]+)$ merge.php?id=$1 [L]
+RewriteRule ^undo_merge/?([0-9]+)$ action.php?action=undo_merge&id=$1 [L]
+RewriteRule ^revert_change/?([0-9]+)$ action.php?action=revert_change&id=$1 [L]
 
 # Content management.
 RewriteRule ^CMS$ cms.php [L]
 RewriteRule ^edit_page/([0-9]+)$ cms_edit.php?edit=$1 [L]
 RewriteRule ^new_page$ cms_edit.php [L]
 RewriteRule ^delete_page/([0-9]+)$ action.php?action=delete_page&id=$1 [L]
+RewriteRule ^undelete_page/([0-9]+)$ action.php?action=undelete_page&id=$1 [L]
 
 # Private messages.
 RewriteRule ^private_messages/?([0-9]+)?$ pm_inbox.php?p=$1 [L]

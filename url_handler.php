@@ -18,7 +18,7 @@ if(in_array($requested_page, $automatic)) {
 	exit();
 }
 
-$res = $db->q('SELECT id, page_title, content, markup FROM pages WHERE url = ?', $requested_page);
+$res = $db->q('SELECT id, page_title, content, markup FROM pages WHERE url = ? AND deleted = 0', $requested_page);
 $cms_page = $res->fetchObject();
 
 if ( ! $cms_page) {

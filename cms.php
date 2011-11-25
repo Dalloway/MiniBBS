@@ -20,7 +20,7 @@ $columns = array
 );
 $table = new Table($columns, 2);
 $table->add_td_class(2, 'snippet');
-$res = $db->q('SELECT id, url, page_title, content FROM pages');
+$res = $db->q('SELECT id, url, page_title, content FROM pages WHERE deleted = 0');
 
 while ($page = $res->fetchObject()) {
 	$values = array

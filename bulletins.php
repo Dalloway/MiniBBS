@@ -20,21 +20,21 @@ endif;
 
 $columns = array
 (
-	'Message',
 	'Author',
+	'Message',
 	'Age ▼'
 );
 if($perm->get('delete')) {
 	$columns[] = 'Delete';
 }
-$table = new Table($columns, 0);
+$table = new Table($columns, 1);
 
 $res = $db->q('SELECT id, message, time, author, name, trip FROM bulletins ORDER BY id DESC LIMIT '.$page->offset.', '.$page->limit);
 while($bulletin = $res->fetchObject()) {	
 	$values = array
 	(
-		parser::parse($bulletin->message),
 		format_name($bulletin->name, $bulletin->trip, $perm->get('link', $bulletin->author)),
+		parser::parse($bulletin->message),
 		'<span class="help" title="'.format_date($bulletin->time).'">' . age($bulletin->time) . '</span>'
 	);
 	if($perm->get('delete')) {

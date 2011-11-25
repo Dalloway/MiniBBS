@@ -141,7 +141,7 @@ if( ! $_GET['citations']) {
 	$replies->output();
 }
 
-if($num_topics_fetched + $num_replies_fetched == 0) {
+if($num_topics_fetched + $num_replies_fetched == 0 && ! isset($_GET['citations'])) {
 	echo '<p>You haven\'t posted anything yet.</p>';
 }
 

@@ -45,7 +45,8 @@ $searchable_types = array
 	'lock' => 'Lock logs',
 	'stick' => 'Sticky logs',
 	'defcon' => 'DEFCON logs',
-	'cms' => 'CMS logs'
+	'cms' => 'CMS logs',
+	'merge' => 'Merge logs'
 );
 ?>
 <fieldset>
@@ -93,12 +94,12 @@ $res = $db->order_by('time DESC')->limit($page->offset, $page->limit)->exec();
 
 $columns = array
 (
-	'Action',
 	'Mod',
+	'Action',
 	'Time ▼'
 );
 
-$table = new Table($columns, 0);
+$table = new Table($columns, 1);
 
 function censor_ip($ip) {
 	$ip = explode('.', $ip, 2);
@@ -122,14 +123,34 @@ while( $log = $res->fetchObject() ) {
 		
 		case 'delete_page':
 			$action = 'Deleted a page.';
+			
+			if($perm->get('cms')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'undelete_page/'.$log->target.'" onclick="return quickAction(this, \'Really undelete page?\');">undo</a>]</span>';
+			}
+		break;
+		
+		case 'undelete_page':
+			$action = 'Restored a page.';
+			
+			if($perm->get('cms')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'delete_page/'.$log->target.'" onclick="return quickAction(this, \'Really delete page?\');">undo</a>]</span>';
+			}
 		break;
 		
 		case 'edit_topic':
 			$action = 'Edited <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
+			
+			if($perm->get('edit_others')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that topic edit?\');">undo</a>]</span>';
+			}
 		break;
 		
 		case 'edit_reply':
 			$action = 'Edited <a href="'.DIR.'reply/'.$log->target.'">a reply</a>.';
+			
+			if($perm->get('edit_others')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that reply edit?\');">undo</a>]</span>';
+			}
 		break;
 		
 		case 'ban_uid':
@@ -326,7 +347,35 @@ while( $log = $res->fetchObject() ) {
 		break;	
 		
 		case 'cms_edit':
-			$action = 'Edited a page (<a href="'.DIR. htmlspecialchars($log->target).'">'.htmlspecialchars($log->target).'</a>).';;
+			$action = 'Edited a page (<a href="'.DIR. htmlspecialchars($log->target).'">'.htmlspecialchars($log->target).'</a>).';
+			
+			if($perm->get('cms')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that page edit?\');">undo</a>]</span>';
+			}
+		break;
+		
+		case 'revert_page':
+			$action = 'Reverted changes to a page.';
+			
+			if($perm->get('cms')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that page reversion?\');">undo</a>]</span>';
+			}
+		break;
+		
+		case 'revert_reply':
+			$action = 'Reverted changes to <a href="'.DIR.'reply/'.$log->target.'">a reply</a>.';
+			
+			if($perm->get('edit_others')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that reply reversion?\');">undo</a>]</span>';
+			}
+		break;
+		
+		case 'revert_topic':
+			$action = 'Reverted changes to <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
+			
+			if($perm->get('edit_others')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that topic reversion?\');">undo</a>]</span>';
+			}
 		break;
 		
 		case 'perm_change':
@@ -341,14 +390,30 @@ while( $log = $res->fetchObject() ) {
 			}
 		break;
 		
+		case 'merge':
+			$action = 'Merged a topic (#' . number_format($log->target) . ') into <a href="'.DIR.'topic/'.$log->param.'">another</a>.';
+			
+			if($perm->get('merge')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'undo_merge/'.$log->target.'" onclick="return quickAction(this, \'Really unmerge that topic?\');">undo</a>]</span>';
+			}
+		break;
+		
+		case 'unmerge':
+			$action = 'Unmerged <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
+			
+			if($perm->get('merge')) {
+				$action .= ' <span class="undo">[<a href="'.DIR.'merge/'.$log->target.'">undo</a>]</span>';
+			}
+		break;
+		
 		default:
 			$action = 'Undefined action ('.htmlspecialchars($log->action).')';
 	}
 	
 	$values = array
 	(
-		$action,
 		$mod_name,
+		$action,
 		'<span class="help" title="' . format_date($log->time) . '">' . age($log->time) . '</span>'
 	);
 	$table->row($values);

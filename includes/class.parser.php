@@ -21,20 +21,20 @@ class parser {
 		'/\b(?<!\[)(https?:\/\/[\@a-z0-9\x21\x23-\x27\x2a-\x2e\x3a\x3b\/;\x3f-\x7a\x7e\x3d]+)/Sxi',
 		// 07 Linkify text in the form of [http://example.org text].
 		'@\[(https?:\/\/[\@a-z0-9\x21\x23-\x27\x2a-\x2e\x3a\x3b\/;\x3f-\x7a\x7e\x3d]+) (.+?)\]@i',
-		// 09 Quotes.
+		// 08 Quotes.
 		'/^&gt;(.*)$/m',
-		// 10 Headers.
+		// 09 Headers.
 		'/\[h\](.+?)\[\/h\]/m',
 		'/==(.+?)==\s+?/m',
-		// 11 Bordered text.
+		// 10 Bordered text.
 		'/\[border\](.+?)\[\/border\]/ms',
-		// 12 Convert double dash in to a —.
+		// 11 Convert double dash in to a —.
 		'/--/',
-		// 13 Highlights.
+		// 12 Highlights.
 		'/\[hl\](.+?)\[\/hl\]/ms',
-		// 14 Monospace.
+		// 13 Monospace.
 		'/\[code\](.+?)\[\/code\]/ms',
-		// 15 Shift-JIS
+		// 14 Shift-JIS
 		'/\[aa\](.+?)\[\/aa\]/ms'
 	);
 	
@@ -50,22 +50,52 @@ class parser {
 		'<s>$1</s>', #05
 		'<a href="$0" rel="nofollow">$0</a>', #06
 		'<a href="$1" title="$1" rel="nofollow">$2</a>', #07
-		'<span class="quote"><strong>&gt;</strong> $1</span>', #09
-		'<h4 class="user">$1</h4>', #10
-		'<h4 class="user">$1</h4>', #10
-		'<div class="border">$1</div>', #11
-		'—', #12
-		'<span class="highlight">$1</span>', #13
-		'<pre style="display:inline">$1</pre>', #14
-		'<pre class="shift_jis">$1</pre>' #15
+		'<span class="quote"><strong>&gt;</strong> $1</span>', #08
+		'<h4 class="user">$1</h4>', #09
+		'<h4 class="user">$1</h4>', #09
+		'<div class="border">$1</div>', #10
+		'—', #11
+		'<span class="highlight">$1</span>', #12
+		'<pre style="display:inline">$1</pre>', #13
+		'<pre class="shift_jis">$1</pre>' #14
 	);
 
 	/* Converts user input to HTML */
 	public static function parse($text) {
 		$text = htmlspecialchars($text);
 		$text = str_replace("\r", '', $text);
-
+		
+		/* Temporarily remove content between [noparse] tags before parsing the rest */
+		$noparse_offset = 0;
+		while( ($noparse_start = strpos($text, '[noparse]', $noparse_offset)) !== false) {
+			/* [noparse] tag has 9 characters -- we leave it but replace the content */
+			$noparse_start += 9;
+			$noparse_offset = $noparse_start;
+			$noparse_end = strpos($text, '[/noparse]', $noparse_offset);
+			
+			if($noparse_end) {
+				$noparse_blocks[] = substr($text, $noparse_start, $noparse_end - $noparse_start);
+				$text = substr_replace($text, '', $noparse_start, $noparse_end - $noparse_start);
+			}
+			
+		}
+		
+		/* Replace mark-up with HTML */
 		$text = preg_replace(self::$markup, self::$replacements, $text);
+		
+		/* Restore [noparse] content */
+		if( ! empty($noparse_blocks)) {
+			$chunks = explode('[noparse][/noparse]', $text);
+			$text = '';
+			
+			foreach($chunks as $key => $chunk) {
+				$text .= $chunk;
+				if(isset($noparse_blocks[$key])) {
+					$text .= $noparse_blocks[$key];
+				}
+			}
+		}
+
 		if(strpos($text, '[php]') !== false) {
 			$text = preg_replace_callback('|\[php\](.+?)\[/php\]|ms', array('self', 'highlight_php'), $text);
 		}

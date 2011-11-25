@@ -17,7 +17,7 @@ $this->gzhandler();
 <?php	
 	if($_SESSION['settings']['style'] != 'Custom only'): 
 ?>
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?12" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?14" />
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
 <?php
 	endif;

@@ -129,6 +129,12 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 <?php
 	endif;
 
+	if($perm->get('merge') && ! $topic->deleted):
+?>
+		<li><a href="<?php echo DIR ?>merge/<?php echo $topic_id ?>">Merge</a></li>
+<?php
+	endif;
+	
 	if($perm->get('view_profile')):
 ?>
 		<li><a href="<?php echo DIR ?>profile/<?php echo $topic->author ?>">Profile</a></li>
@@ -162,11 +168,12 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 		<li><a href="<?php echo DIR ?>undelete_topic/<?php echo $topic_id ?>" onclick="return quickAction(this, 'Really undelete this topic?');">Undelete</a></li>
 <?php
 		endif;
-		if($topic->file_name):
+	endif;
+	
+	if($topic->file_name && ( $perm->get('delete') || ($topic->author == $_SESSION['UID'] && ($perm->get('edit_limit') == 0 || ($_SERVER['REQUEST_TIME'] - $topic->time < $perm->get('edit_limit')))))):
 ?>
 		<li><a href="<?php echo DIR ?>delete_image/<?php echo $topic_id ?>" onclick="return quickAction(this, 'Really delete this image?');">Delete image</a></li>
-<?php
-		endif;
+<?php	
 	endif;
 	
 	if($topic->author !== $_SESSION['UID']):
@@ -270,10 +277,10 @@ if($topic->poll) {
 }	
 	
 /* Output replies. */
-$db->select('replies.id, replies.time, replies.author, replies.body, replies.deleted, replies.edit_time, replies.edit_mod, replies.namefag, replies.tripfag, replies.link, replies.imgur')
+$db->select('replies.id, replies.time, replies.author, replies.body, replies.deleted, replies.edit_time, replies.edit_mod, replies.namefag, replies.tripfag, replies.link, replies.imgur, replies.original_parent')
    ->from('replies')
    ->where('replies.parent_id = ?', $topic_id)
-   ->order_by('replies.id');
+   ->order_by('replies.time');
 if (ALLOW_IMAGES && ! $_SESSION['settings']['text_mode']) {
 	$db->select('images.file_name, images.original_name, images.md5')
 	   ->join('images', 'replies.id = images.reply_id');
@@ -290,6 +297,7 @@ $page_end = $page_start + $_SESSION['settings']['posts_per_page'];
 $history = array(); // Data on replies.
 $posters = array(); // Data on posters
 $posters[$topic->author] = array('number' => 0);
+$merges = array(); // IDs of merged OPs.
 $reply_count = 0; // The number of non-deleted replies.
 $poster_number = 1; // The current number of posters in this thread.
 $previous_post_time = $topic->time;
@@ -374,6 +382,14 @@ while( $reply = $replies->fetchObject() ) {
 
 	$citation_count = preg_match_all('/@([0-9,]+)/m', $parsed_body, $citations);
 	$citations = (array) $citations[1];
+	
+	/* If this is a merged reply that contains no citations, add a citation to the original parent. */
+	if( ! $citations && $reply->original_parent && isset($merges[$reply->original_parent])) {
+		$merge_citation = number_format($merges[$reply->original_parent]);
+		$parsed_body = '@' . $merge_citation . '<br />' . $parsed_body;
+		$citations[] = $merge_citation;
+	}
+
 	if($citation_count > 1) {
 		/* Replace each citation only once (preventing memory attacks). */
 		$citations = array_unique($citations);
@@ -435,8 +451,19 @@ while( $reply = $replies->fetchObject() ) {
 	if ($reply_count > 1) {
 		echo ', ' . age($reply->time, $topic->time) . ' after the original post';
 	}
+	echo '</span>';
 	
-	echo '</span><span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
+	if($reply->original_parent && $reply->original_parent != $topic_id) {
+		if( ! isset($merges[$reply->original_parent])) {
+			$merges[$reply->original_parent] = $reply->id;
+			$merge_tooltip = 'This was the original post of another topic merged into this one.';
+		} else {
+			$merge_tooltip = 'This was a reply to another topic merged into this one. Click me to jump to the original OP.';
+		}
+		echo ' <a href="'.DIR.'topic/' . (int) $_GET['id'] . page($topic->replies, $history[$merges[$reply->original_parent]]['post_number']) . '#reply_'.$merges[$reply->original_parent].'" class="merge_marker help" title="'.$merge_tooltip.'" onclick="highlightReply('.$merges[$reply->original_parent].')">⧒</a>';
+	}
+	
+	echo '<span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
 	'<div class="body poster_body_'.$posters[$reply->author]['number'].'" id="reply_box_' . $reply->id . '">';
 
 	if($reply->imgur) {
@@ -487,6 +514,11 @@ while( $reply = $replies->fetchObject() ) {
 	} else {
 		echo '<li><a href="'.DIR.'report_reply/' . $reply->id . '">Report</a></li>';
 	}
+	
+	if($reply->file_name && ( $perm->get('delete') || ($reply->author == $_SESSION['UID'] && ($perm->get('edit_limit') == 0 || ($_SERVER['REQUEST_TIME'] - $reply->time < $perm->get('edit_limit')))))) {
+		echo '<li><a href="'.DIR.'delete_image/' . $topic_id . '/' . $reply->id . '" onclick="return quickAction(this, \'Really delete this image?\');">Delete image</a></li>';
+	}
+	
 	if($reply->author !== $_SESSION['UID']) {
 		echo '<li><a href="'.DIR.'contact_poster/' . $reply->id . '">PM</a></li>';
 	}
