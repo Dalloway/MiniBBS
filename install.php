@@ -227,8 +227,7 @@ $tables['replies'] = "CREATE TABLE IF NOT EXISTS `replies` (
   KEY `author` (`author`),
   KEY `parent_id` (`parent_id`),
   KEY `author_ip` (`author_ip`),
-  KEY `time` (`time`),
-  FULLTEXT KEY `body` (`body`)
+  KEY `time` (`time`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['reports'] = "CREATE TABLE IF NOT EXISTS `reports` (
@@ -275,8 +274,7 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
   KEY `author_ip` (`author_ip`),
   KEY `last_post` (`last_post`),
   KEY `time` (`time`),
-  KEY `sticky` (`sticky`),
-  FULLTEXT KEY `searchable` (`headline`,`body`)
+  KEY `sticky` (`sticky`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (
@@ -513,7 +511,7 @@ if(isset($_POST['form_sent'])) {
 		/* Now create our config file */
 		if(error::valid()) {
 			if( ! file_put_contents(SITE_ROOT . '/includes/config.php', $config_template)) {
-				error::add('Unable to create config.php');
+				error::add('Unable to create config.php.');
 			} else {
 				header('Location: http://' . $input['hostname'] . $input['directory'] . 'restore_ID/' . $user_id . '/' . $password);
 				exit();

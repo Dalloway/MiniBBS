@@ -29,6 +29,7 @@ else if ( ! empty($_POST['memorable_name'])) {
 	
 if ( ! empty($uid)) {
 	$previous_id = $_SESSION['UID'];
+	$previous_post_count = $_SESSION['post_count'];
 	if(activate_id($uid, $password)) {
 		load_settings();
 		$notice = 'Welcome back.';
@@ -39,6 +40,7 @@ if ( ! empty($uid)) {
 			} else {
 				$db->q('UPDATE topics SET author = ? WHERE author = ?', $_SESSION['UID'], $previous_id);
 				$db->q('UPDATE replies SET author = ? WHERE author = ?', $_SESSION['UID'], $previous_id);
+				$db->q('UPDATE users SET post_count = post_count + ?', $previous_post_count);
 				$db->q('UPDATE private_messages SET source = ? WHERE source = ?', $_SESSION['UID'], $previous_id);
 				$db->q('UPDATE private_messages SET destination = ? WHERE destination = ?', $_SESSION['UID'], $previous_id);
 				$notice .= ' Your IDs have been merged.';
