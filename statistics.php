@@ -129,7 +129,7 @@ $your_posts_per_day = round($your_posts / $days_since_first_visit, 2);
 	</tr>
 	<tr>
 		<th class="minimal">Your ranking by post count</th>
-		<td class="minimal"><?php echo $your_ranking ?></td>
+		<td class="minimal">#<?php echo $your_ranking ?></td>
 		<td></td>
 	</tr>
 	<tr class="odd">
