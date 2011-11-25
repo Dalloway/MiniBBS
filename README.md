@@ -1,14 +1,13 @@
 # MiniBBS (http://minibbs.org/) -- anonymous imageboard software
 
 ## Requirements
-PHP 5.2+
-MySQL
-Apache
+* PHP 5.2+
+* MySQL
+* Apache
 
 ## Installation
 1. Create an empty database.
 2. Upload the files to wherever you want your forum to be. Browse to install.php in your web browser and follow the instructions.
-
 
 ## License (MIT)
 Copyright (C) 2011 by MiniBBS contributors
