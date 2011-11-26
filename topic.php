@@ -508,9 +508,6 @@ while( $reply = $replies->fetchObject() ) {
 		} else if($perm->get('undelete')) {
 			echo '<li><a href="'.DIR.'undelete_reply/' . $reply->id . '" onclick="return quickAction(this, \'Really undelete this reply?\');">Undelete</a></li>';
 		}
-		if($reply->file_name) {
-			echo '<li><a href="'.DIR.'delete_image/' . $topic_id . '/' . $reply->id . '" onclick="return quickAction(this, \'Really delete this image?\');">Delete image</a></li>';
-		}
 	} else {
 		echo '<li><a href="'.DIR.'report_reply/' . $reply->id . '">Report</a></li>';
 	}
