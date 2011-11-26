@@ -1,5 +1,5 @@
 *.cache.php
-/favicon.png
+favicon.png
 /includes/config.php
 /img/*
 /thumbs/*

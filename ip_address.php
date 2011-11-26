@@ -76,19 +76,21 @@ if ($banned) {
 if ($ip_num_ids > 0) {
 	echo '<h4 class="section">IDs</h4>';
 	
-	$res = $db->q('SELECT uid, first_seen FROM users WHERE ip_address = ? ORDER BY first_seen DESC LIMIT 5000', $ip_address);
+	$res = $db->q('SELECT uid, first_seen, post_count FROM users WHERE ip_address = ? ORDER BY post_count DESC, first_seen DESC LIMIT 5000', $ip_address);
 	
 	$columns  = array(
 		'ID',
-		'First seen ▼'
+		'Post count ▼',
+		'First seen'
 	);
 	$id_table = new Table($columns, 0);
 	
-	while (list($id, $id_first_seen) = $res->fetch()) {
+	while ($id = $res->fetchObject()) {
 		$values = array
 		(
-			'<a href="'.DIR.'profile/' . $id . '">' . $id . '</a>',
-			'<span class="help" title="' . format_date($id_first_seen) . '">' . age($id_first_seen) . '</span>'
+			'<a href="'.DIR.'profile/' . $id->uid . '">' . $id->uid . '</a>',
+			format_number($id->post_count),
+			'<span class="help" title="' . format_date($id-first_seen) . '">' . age($id->first_seen) . '</span>'
 		);
 		
 		$id_table->row($values);
