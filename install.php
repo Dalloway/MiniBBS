@@ -4,9 +4,9 @@ $tables = array();
 
 $tables['activity'] = "CREATE TABLE IF NOT EXISTS `activity` (
   `uid` char(23) NOT NULL,
-  `time` int(10) NOT NULL,
+  `time` int(10) unsigned NOT NULL,
   `action_name` varchar(60) NOT NULL,
-  `action_id` int(10) NOT NULL,
+  `action_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`uid`),
   KEY `time` (`time`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -46,7 +46,7 @@ $tables['config'] = "CREATE TABLE IF NOT EXISTS `config` (
 
 $tables['failed_postings'] = "CREATE TABLE IF NOT EXISTS `failed_postings` (
   `uid` char(23) NOT NULL,
-  `time` int(10) NOT NULL,
+  `time` int(10) unsigned NOT NULL,
   `reason` text NOT NULL,
   `headline` varchar(100) NOT NULL,
   `body` text NOT NULL,
@@ -125,7 +125,7 @@ $tables['images'] = "CREATE TABLE IF NOT EXISTS `images` (
 
 $tables['last_actions'] = "CREATE TABLE IF NOT EXISTS `last_actions` (
   `feature` varchar(30) NOT NULL,
-  `time` int(11) NOT NULL,
+  `time` int(11) unsigned NOT NULL,
   PRIMARY KEY (`feature`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -135,7 +135,7 @@ $tables['mod_actions'] = "CREATE TABLE IF NOT EXISTS `mod_actions` (
   `target` char(23) NOT NULL,
   `mod_uid` char(23) NOT NULL,
   `mod_ip` varchar(100) NOT NULL,
-  `time` int(10) NOT NULL,
+  `time` int(10) unsigned NOT NULL,
   `reason` text CHARACTER SET utf8 NOT NULL,
   `param` text NOT NULL,
   KEY `action` (`action`),
@@ -242,7 +242,7 @@ $tables['reports'] = "CREATE TABLE IF NOT EXISTS `reports` (
 
 $tables['search_log'] = "CREATE TABLE IF NOT EXISTS `search_log` (
   `ip_address` varchar(50) NOT NULL,
-  `time` int(15) NOT NULL,
+  `time` int(15) unsigned NOT NULL,
   KEY `time` (`time`),
   KEY `ip_address` (`ip_address`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -280,8 +280,8 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
 $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (
   `uid` char(23) CHARACTER SET utf8 NOT NULL,
   `password` varchar(32) CHARACTER SET utf8 NOT NULL,
-  `first_seen` int(10) NOT NULL,
-  `last_seen` int(10) NOT NULL,
+  `first_seen` int(10) unsigned NOT NULL,
+  `last_seen` int(10) unsigned NOT NULL,
   `topic_visits` text NOT NULL,
   `ip_address` varchar(39) CHARACTER SET utf8 NOT NULL,
   `namefag` text CHARACTER SET utf8 NOT NULL,
@@ -296,10 +296,10 @@ $tables['user_settings'] = "CREATE TABLE IF NOT EXISTS `user_settings` (
   `memorable_password` varchar(128) CHARACTER SET utf8 NOT NULL,
   `email` varchar(100) CHARACTER SET utf8 NOT NULL,
   `spoiler_mode` tinyint(1) NOT NULL DEFAULT '0',
-  `snippet_length` smallint(3) NOT NULL DEFAULT '80',
+  `snippet_length` smallint(3) unsigned NOT NULL DEFAULT '80',
   `posts_per_page` int(5) unsigned NOT NULL DEFAULT '0',
-  `topics_mode` tinyint(1) NOT NULL,
-  `ostrich_mode` tinyint(1) NOT NULL DEFAULT '0',
+  `topics_mode` tinyint(1) unsigned NOT NULL,
+  `ostrich_mode` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `style` varchar(18) NOT NULL DEFAULT 'mint',
   `ajax_mode` tinyint(1) unsigned NOT NULL,
   `celebrity_mode` smallint(1) unsigned NOT NULL DEFAULT '0',
@@ -321,7 +321,7 @@ $tables['user_styles'] = "CREATE TABLE IF NOT EXISTS `user_styles` (
 
 $tables['watchlists'] = "CREATE TABLE IF NOT EXISTS `watchlists` (
   `uid` char(23) NOT NULL,
-  `topic_id` int(10) NOT NULL,
+  `topic_id` int(10) unsigned NOT NULL,
   `new_replies` tinyint(1) unsigned NOT NULL DEFAULT '0',
   KEY `uid` (`uid`),
   KEY `topic_id` (`topic_id`),
