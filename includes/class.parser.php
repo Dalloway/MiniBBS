@@ -74,7 +74,10 @@ class parser {
 			$noparse_end = strpos($text, '[/noparse]', $noparse_offset);
 			
 			if($noparse_end) {
-				$noparse_blocks[] = substr($text, $noparse_start, $noparse_end - $noparse_start);
+				$noparse_inner = substr($text, $noparse_start, $noparse_end - $noparse_start);
+				/* Prevent citations from being parsed. */
+				$noparse_inner = str_replace('@', '&#64;', $noparse_inner);
+				$noparse_blocks[] = $noparse_inner;
 				$text = substr_replace($text, '', $noparse_start, $noparse_end - $noparse_start);
 			}
 			
