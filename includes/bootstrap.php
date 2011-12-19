@@ -32,7 +32,7 @@ foreach($config as $name => $value) {
 unset($config);
 
 /* If the calling file defines MINIMAL_BOOTSTRAP as true, we'll skip a few checks. */
-defined(MINIMAL_BOOTSTRAP) or define('MINIMAL_BOOTSTRAP', false);
+defined('MINIMAL_BOOTSTRAP') or define('MINIMAL_BOOTSTRAP', false);
 
 /* Initialize the environment */
 if( ! MINIMAL_BOOTSTRAP) {
