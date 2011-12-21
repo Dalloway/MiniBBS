@@ -115,7 +115,10 @@ RewriteRule ^merge/?([0-9]+)$ merge.php?id=$1 [L]
 RewriteRule ^undo_merge/?([0-9]+)$ action.php?action=undo_merge&id=$1 [L]
 RewriteRule ^revert_change/?([0-9]+)$ action.php?action=revert_change&id=$1 [L]
 RewriteRule ^message_manager$ message_manager.php [L]
+<<<<<<< HEAD
 RewriteRule ^edit_message/(.+)$ message_edit.php?key=$1 [L]
+=======
+>>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 
 # Content management.
 RewriteRule ^CMS$ cms.php [L]

@@ -65,7 +65,11 @@ $reply_count = $res->fetchColumn();
 $post_count = $topic_count + $reply_count;
 
 /* Do we have permission to view this user's IP? */
+<<<<<<< HEAD
 if( ! $perm->get('limit_ip') || $perm->get('limit_ip_max') > $post_count || $uid->first_seen > $_SERVER['REQUEST_TIME'] - 86400) {
+=======
+if($uid->ip_address && $perm->get('view_ip') && ($perm->get('view_ip_max') > $post_count || $perm->get('view_ip_max') == 0 || $uid->first_seen > $_SERVER['REQUEST_TIME'] - 86400)) {
+>>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	$view_ip = true;
 	
 	$id_hostname = @gethostbyaddr($uid->ip_address);

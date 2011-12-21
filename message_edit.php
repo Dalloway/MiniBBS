@@ -7,6 +7,7 @@ if( ! $perm->get('manage_messages')) {
 
 $current_message = $lang->get_raw($_GET['key']);
 
+<<<<<<< HEAD
 if($current_message === false) {
 	error::fatal('No message with that key was found.');
 }
@@ -17,10 +18,21 @@ if(isset($_POST['form_sent'])) {
 	$db->q('INSERT INTO messages (`key`, `message`) VALUES (?, ?) ON DUPLICATE KEY UPDATE `message` = ?', $_GET['key'], $_POST['message'], $_POST['message']);
 	cache::clear('lang');
 	redirect('Message updated', 'message_manager');
+=======
+if( ! $current_message)) {
+	error::fatal('No message with that key was found.');
+}
+
+$template->title = 'Edit message: ' . htmlspecialchars($_GET['key']);
+
+if(isset($_POST['form_sent'])) {
+
+>>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 }
 
 ?>
 
+<<<<<<< HEAD
 <p>Messages use the following syntax:</p>
 <ul>
 	<li><kbd>$1</kbd>, <kbd>$2</kbd>, and so on translate to the message parameters, which are provided by the script.</li>
@@ -31,6 +43,10 @@ if(isset($_POST['form_sent'])) {
 
 <form action="" method="post">
 	<textarea name="message" rows="10"><?php echo htmlspecialchars($current_message) ?></textarea>
+=======
+<form action="" method="post">
+
+>>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	<input type="submit" name="form_sent" value="Update" />
 </form>
 

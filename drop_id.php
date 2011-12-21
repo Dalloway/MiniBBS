@@ -5,7 +5,11 @@ $template->title = 'Drop ID';
 if($_POST['drop_ID'] && check_token()) {
 	unset($_SESSION['UID']);
 	unset($_SESSION['ID_activated']);
+<<<<<<< HEAD
 	load_settings();
+=======
+	unset($_SESSION['settings']);
+>>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	setcookie('UID', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
 	setcookie('password', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
 	$_SESSION['notice'] = 'Your ID has been dropped.';
