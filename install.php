@@ -491,13 +491,8 @@ if(isset($_POST['form_sent'])) {
 		foreach($config_defaults as $key => $value) {
 			$config_values .= '(' . $db->quote($key) . ', ' . $db->quote($value) . '), ';
 		}
-<<<<<<< HEAD
 		$config_values = rtrim($config_values, ' ,');
 
-=======
-		$config_values = rtrim($config_values, ',');
-		
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 		/* Insert config */
 		$db->query
 		(

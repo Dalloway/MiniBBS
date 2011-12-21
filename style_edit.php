@@ -11,11 +11,7 @@ if(isset($_GET['edit'])) {
 		error::fatal('Invalid style ID.');
 	}
 	
-<<<<<<< HEAD
 	$res = $db->q('SELECT title, style AS css, name, trip, uid, public, basis, original FROM user_styles WHERE id = ?', $_GET['edit']);
-=======
-	$res = $db->q('SELECT title, style AS css, name, trip, uid, public, basis FROM user_styles WHERE id = ?', $_GET['edit']);
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	$style = $res->fetchObject();
 	
 	if( ! $style) {
@@ -37,21 +33,14 @@ if(isset($_POST['form_sent'])) {
 	$set_name = $_POST['name'];
 	
 	$style = (object) $_POST['style'];
-<<<<<<< HEAD
 	$style->css = super_trim($style->css);
 	$style->md5 = md5($style->css);
-=======
-	$style->css = strip_tags(super_trim($style->css));
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	$style->title = super_trim($style->title);
 	$style->public = (isset($style->public) ? '1' : '0');
 	$style->basis = str_replace(array('/', '\\', '.', "\0"), '', $style->basis);
 	$style->color = '';
 	list($style->name, $style->trip) = tripcode($set_name);
-<<<<<<< HEAD
 	$style->original = (isset($style->original) ? (int) $style->original : 0);
-=======
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	
 	if(isset($_POST['preview']) && check_token()) {
 		$template->style_override = $style->basis;
@@ -70,11 +59,7 @@ if(isset($_POST['form_sent'])) {
 		
 		/* Uncheck the public switch if a style identical to this already exists*/
 		if($style->public && ! $editing) {
-<<<<<<< HEAD
 			$res = $db->q('SELECT 1 FROM user_styles WHERE md5 = ? AND basis = ?', $style->md5, $style->basis);
-=======
-			$res = $db->q('SELECT 1 FROM user_styles WHERE style = ? AND basis = ?', $style->css, $style->basis);
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 			if($res->fetchColumn()) {
 				$style->public = '0';
 			}
@@ -114,15 +99,9 @@ if(isset($_POST['form_sent'])) {
 				$db->q
 				(
 					'UPDATE user_styles
-<<<<<<< HEAD
 					SET title = ?, style = ?, md5 = ?, public = ?, basis = ?, color = ?, name = ?, trip = ?, modified = ?
 					WHERE id = ? AND uid = ?',
 					$style->title, $style->css, $style->md5, $style->public, $style->basis, $style->color, $style->name, $style->trip, $_SERVER['REQUEST_TIME'],
-=======
-					SET title = ?, style = ?, public = ?, basis = ?, color = ?, name = ?, trip = ?, modified = ?
-					WHERE id = ? AND uid = ?',
-					$style->title, $style->css, $style->public, $style->basis, $style->color, $style->name, $style->trip, $_SERVER['REQUEST_TIME'],
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 					$_GET['edit'], $_SESSION['UID']
 				);
 				
@@ -132,15 +111,9 @@ if(isset($_POST['form_sent'])) {
 				$db->q
 				(
 					'INSERT INTO user_styles
-<<<<<<< HEAD
 					(title, style, md5, public, basis, color, name, trip, modified, original, uid) VALUES
 					(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 					$style->title, $style->css, $style->md5, $style->public, $style->basis, $style->color, $style->name, $style->trip, $_SERVER['REQUEST_TIME'], $style->original, $_SESSION['UID']
-=======
-					(title, style, public, basis, color, name, trip, modified, uid) VALUES
-					(?, ?, ?, ?, ?, ?, ?, ?, ?)',
-					$style->title, $style->css, $style->public, $style->basis, $style->color, $style->name, $style->trip, $_SERVER['REQUEST_TIME'], $_SESSION['UID']
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 				);
 				
 				$new_id = $db->lastInsertId();
@@ -179,11 +152,7 @@ endif;
 	</div>
 
 	<div>
-<<<<<<< HEAD
 		<textarea id="custom_style" name="style[css]" cols="80" rows="29"><?php echo htmlspecialchars($style->css) ?></textarea>
-=======
-		<textarea id="custom_style" name="style[css]" cols="80" rows="26"><?php echo htmlspecialchars($style->css) ?></textarea>
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	</div>
 	<div class="row">
 		<label for="style_basis" class="inline">Basis: </label>

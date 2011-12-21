@@ -13,18 +13,8 @@ $this->gzhandler();
 	<link rel="icon" type="image/png" href="<?php echo DIR ?>favicon.png" />
 	
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?14" />
-<<<<<<< HEAD
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
 <?php	
-=======
-<?php	
-	if( ! empty($_SESSION['settings']['style'])): 
-?>
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
-<?php
-	endif;
-	
->>>>>>> 549290f098d657f40dbdf2a86f845badd4fec54d
 	if($_SESSION['settings']['custom_style'] && $this->style_override === false):
 ?>
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR; ?>custom_style/<?php echo $_SESSION['settings']['custom_style'] ?>/<?php echo (int) $_SESSION['style_last_modified'] ?>" />
