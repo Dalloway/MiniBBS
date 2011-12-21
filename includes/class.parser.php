@@ -214,7 +214,7 @@ class parser {
 			}
 			
 			/* Strip linebreaks inserted by nl2br() */
-			$table = str_replace('<br />', '', $table->output('', true));
+			$table = str_replace('<br />', '', $table);
 			$post = $before_table . $table . $after_table;
 		}
 		

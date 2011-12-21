@@ -58,6 +58,11 @@ class Table {
 		$this->row_count++;
 	}
 	
+	/* Returns the table when object is cast as a string. */
+	public function __toString() {
+		return $this->output('', true);
+	}
+	
 	/* If we have any rows, build and output the table. Otherwise, display $no_rows_message. */
 	public function output($no_rows_message = '', $return = false) {
 		if($return) {
