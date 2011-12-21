@@ -2,6 +2,15 @@
 require './includes/bootstrap.php';
 update_activity('stuff');
 $template->title = 'Stuff';
+
+/**
+ * If 48 hours has passed since we last optimized the database, send an AJAX
+ * request to maintenance.php. (We use this because many hosts do not support cron.)
+ */
+if(cache::fetch('maintenance') < $_SERVER['REQUEST_TIME'] - 172800) {
+	$template->onload = "$.get('".DIR."maintenance.php');";
+}
+
 ?>
 <div style="width: 50%; float:left">
 <ul class="stuff">

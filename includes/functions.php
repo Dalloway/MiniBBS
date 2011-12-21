@@ -775,6 +775,10 @@ function log_mod($action, $target, $param = '', $reason = '', $mod = null) {
 			$type = 'merge';
 		break;
 		
+		case 'db_maintenance':
+			$type = 'system';
+		break;
+		
 		default:
 			$type = $action;
 	}

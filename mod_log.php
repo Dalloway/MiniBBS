@@ -48,7 +48,8 @@ $searchable_types = array
 	'stick' => 'Sticky logs',
 	'defcon' => 'DEFCON logs',
 	'cms' => 'CMS logs',
-	'merge' => 'Merge logs'
+	'merge' => 'Merge logs',
+	'system' => 'System logs'
 );
 ?>
 <fieldset>
@@ -124,7 +125,7 @@ while( $log = $res->fetchObject() ) {
 	
 	switch($log->action) {
 		case 'db_maintenance':
-			$action = 'Cleaned up the database; ' . number_format($log->param) . ' rows removed.';
+			$action = 'Optimized the database; ' . number_format($log->param) . ' rows removed.';
 		break;
 	
 		case 'delete_image': 
