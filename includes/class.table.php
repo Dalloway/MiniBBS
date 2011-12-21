@@ -21,7 +21,7 @@ class Table {
 	private $row_classes = array();
 	
 	/* Sets the content of each <th> cell, and optionally the primary column. */
-	public function __construct($columns, $primary = null) {
+	public function __construct($columns = array(), $primary = null) {
 		$this->columns = (array) $columns;
 		
 		if(isset($primary)) {
@@ -59,11 +59,15 @@ class Table {
 	}
 	
 	/* If we have any rows, build and output the table. Otherwise, display $no_rows_message. */
-	public function output($no_rows_message = '') {
-		if($this->row_count == 0) {
-			echo '<p>' . $no_rows_message . '</p>';
-			return;
+	public function output($no_rows_message = '', $return = false) {
+		if($return) {
+			/* The table will be returned instead of output directly*/
+			ob_start();
 		}
+	
+		if($this->row_count == 0):
+			echo '<p>' . $no_rows_message . '</p>';
+		else:
 ?>
 <table>
 	<thead>
@@ -96,6 +100,14 @@ class Table {
 	</tbody>
 </table>
 <?php
+		endif;
+		
+		if($return) {
+			$table = ob_get_contents();
+			ob_end_clean();
+			
+			return $table;
+		}
 	}
 }
 ?>

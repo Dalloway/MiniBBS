@@ -3,7 +3,7 @@ require './includes/bootstrap.php';
 force_id();
 
 if ( ! $perm->get('view_profile')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 // Validate IP address.
@@ -86,12 +86,23 @@ if ($ip_num_ids > 0) {
 	$id_table = new Table($columns, 0);
 	
 	while ($id = $res->fetchObject()) {
-		$values = array
-		(
-			'<a href="'.DIR.'profile/' . $id->uid . '">' . $id->uid . '</a>',
-			format_number($id->post_count),
-			'<span class="help" title="' . format_date($id-first_seen) . '">' . age($id->first_seen) . '</span>'
-		);
+		
+		if($perm->get('limit_ip') && $perm->get('limit_ip_max') < $id->post_count) {
+			/* We do not have permission to view this user's IP. */
+			$values = array
+			(
+				'(Hidden.)',
+				format_number($perm->get('limit_ip_max')) . '+',
+				'?'
+			);
+		} else {
+			$values = array
+			(
+				'<a href="'.DIR.'profile/' . $id->uid . '">' . $id->uid . '</a>',
+				format_number($id->post_count),
+				'<span class="help" title="' . format_date($id-first_seen) . '">' . age($id->first_seen) . '</span>'
+			);
+		}
 		
 		$id_table->row($values);
 	}

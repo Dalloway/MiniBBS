@@ -3,9 +3,9 @@ require './includes/bootstrap.php';
 $template->title = 'Drop ID';
 
 if($_POST['drop_ID'] && check_token()) {
-	// CSRF checking.
 	unset($_SESSION['UID']);
 	unset($_SESSION['ID_activated']);
+	load_settings();
 	setcookie('UID', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
 	setcookie('password', '', $_SERVER['REQUEST_TIME'] - 3600, '/');
 	$_SESSION['notice'] = 'Your ID has been dropped.';

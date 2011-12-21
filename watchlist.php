@@ -59,7 +59,7 @@ while ($topic = $res->fetchObject()) {
 	$topics->row($values, $row_class);
 }
 $num_topics_fetched = $topics->row_count;
-$topics->output('You haven\'t watched any topics yet. Once you do, you can keep track of their latest replies here.');
+$topics->output( m('Watchlist: No results') );
 
 if ($num_topics_fetched !== 0) {
 	echo '<div class="row"><input type="submit" value="Unwatch selected" onclick="return confirm(\'Really remove selected topic(s) from your watchlist?\');" class="inline" /></div>';

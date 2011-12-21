@@ -8,7 +8,7 @@ $template->title = 'Stuff';
 	<li><strong><a href="<?php echo DIR; ?>dashboard">Dashboard</a></strong> — <span class="unimportant">Your personal settings, including username and password.</span></li>
 	<li><a href="<?php echo DIR; ?>private_messages">Inbox</a> — <span class="unimportant">Your private messages (<?php echo $notifications['pms']; ?> new).</span></li>
 	<li><a href="<?php echo DIR; ?>edit_ignore_list">Edit ignore list</a> — <span class="unimportant">Self-censorship.</span></li>
-	<li><a href="<?php echo DIR; ?>edit_style">Edit custom stylesheet</a> — <span class="unimportant">Change the board's appearance.</span></li>
+	<li><a href="<?php echo DIR; ?>theme_gallery">Theme gallery</a> <?php echo ($_SESSION['settings']['custom_style'] ? '(<a href="'.DIR.'edit_style/' . (int) $_SESSION['settings']['custom_style'] . '">edit</a>)' : '(<a href="'.DIR.'new_style">new</a>)') ?> — <span class="unimportant">Browse user-contributed styles.</span></li>
 </ul>
 
 <ul class="stuff">
@@ -72,6 +72,11 @@ if ($perm->get('cms') || $perm->get('ban') || $perm->get('defcon')):
 	if($perm->get('defcon')):
 ?>
 	<li><a href="<?php DIR ?>defcon">Manage DEFCON</a>  — <span class="unimportant">Do not treat this lightly.</span></li>
+<?php
+	endif;
+	if($perm->get('manage_messages')):
+?>
+	<li><a href="<?php DIR ?>message_manager">Manage messages</a>  — <span class="unimportant">Edit text from the MiniBBS interface.</span></li>
 <?php
 	endif;
 ?>

@@ -102,7 +102,7 @@ function create_id() {
 	$_SESSION['UID'] = $user_id;
 	$_SESSION['topic_visits'] = array();
 	$_SESSION['post_count'] = 0;
-	$_SESSION['notice'] = 'Welcome to <strong>' . SITE_TITLE . '</strong>. An account has automatically been created and assigned to you. You don\'t have to register or <a href="'.DIR.'restore_ID">log in</a> to use the board, but don\'t clear your cookies unless you have <a href="'.DIR.'dashboard">set a memorable name and password</a>.';
+	$_SESSION['notice'] = m('Notice: Welcome', SITE_TITLE);
 }
 
 function generate_password() {
@@ -155,7 +155,7 @@ function force_id() {
 	global $db, $perm;
 	
 	if( ! $_SESSION['ID_activated']) {
-		error::fatal('The page that you tried to access requires that you have a valid internal ID. This is supposed to be automatically created the first time you load a page here. Maybe you were linked directly to this page? Upon loading this page, assuming that you have cookies supported and enabled in your Web browser, you have been assigned a new ID. If you keep seeing this page, something is wrong with your setup; stop refusing/modifying/deleting cookies!');
+		error::fatal(m('Error: No ID'));
 	}
 	
 	if(ALLOW_BAN_READING && ! defined('REPRIEVE_BAN')) {
@@ -199,7 +199,7 @@ function load_settings() {
 	/* No settings were in the database; load the defaults. */
 	$settings = array();
 	/* Contains $default_dashboard */
-	require SITE_ROOT . '/includes/default_dashboard.php';
+	require SITE_ROOT . '/config/default_dashboard.php';
 	
 	foreach($default_dashboard as $option => $properties) {
 		$settings[$option] = $properties['default'];
@@ -229,10 +229,9 @@ function show_captcha($message) {
         }
 	}
 	if(empty($message)) {
-		echo RECAPTCHA_NOTICE;
-	} else {
-		echo '<p>'.$message.'</p>';
+		$message = m('CAPTCHA preface');
 	}
+	echo '<p>'.$message.'</p>';
 	echo '<form action="" method="post">';
 	echo recaptcha_get_html(RECAPTCHA_PUBLIC_KEY, $error);
 	echo '<input type="submit" value="Continue" />';
@@ -273,11 +272,7 @@ function id_exists($id) {
 	global $db;
 
 	$uid_exists = $db->q('SELECT 1 FROM users WHERE uid = ?', $id);
-	
-	if($uid_exists->fetchColumn()) {
-		return true;
-	}
-	return false;
+	return (bool) $uid_exists->fetchColumn();
 }
 
 function is_ignored(/* ... */) { 
@@ -367,18 +362,33 @@ function format_number($number) {
 	return number_format($number);
 }
 
-function format_name($name, $tripcode, $link = null, $poster_number = null) {
+function format_name($name, $tripcode, $link = null, $poster_number = null, $shorthand = false) {
+	static $anonymous;
+	
+	if( ! isset($anonymous)) {
+		$anonymous = m('Anonymous');
+	}
+	
 	if(empty($name) && empty($tripcode)) {
-		$formatted_name = 'Anonymous';
+		$formatted_name = $anonymous;
 		if(isset($poster_number)) {
 			$formatted_name .= ' <strong>' . number_to_letter($poster_number) . '</strong>';
 		}
 	} else {
-		$formatted_name = '<strong>' . htmlspecialchars(trim($name)) . '</strong>';
-		if( ! empty($link)) {
-			$formatted_name = '<a href="' . DIR . htmlspecialchars($link) . '">' . $formatted_name . '</a>';
+		if(empty($name)) {
+			$formatted_name = $tripcode;
+		} else {
+			$formatted_name = '<strong>' . htmlspecialchars($name) . '</strong>';
+			if( ! empty($link)) {
+				$formatted_name = '<a href="' . DIR . htmlspecialchars($link) . '">' . $formatted_name . '</a>';
+			}
+		
+			if( ! $shorthand) {
+				$formatted_name .= ' ' . $tripcode;
+			} else if($tripcode) {
+				$formatted_name = '<span class="help" title="'.$tripcode.'">' . $formatted_name . '</span>';
+			}
 		}
-		$formatted_name .= ' ' . $tripcode;
 	}
 	
 	return $formatted_name;
@@ -544,7 +554,7 @@ function csrf_token() { // Prevent cross-site redirection forgeries, create toke
 
 function check_token() { // Prevent cross-site redirection forgeries, token check.
 	if($_POST['CSRF_token'] !== $_SESSION['token']) {
-		error::add(MESSAGE_TOKEN_ERROR);
+		error::add(m('Error: Invalid token'));
 		return false;
 	}
 	return true;
@@ -617,7 +627,7 @@ function delete_topic($id, $notify = true) {
 	$author_name = trim($author_name . ' ' . $author_trip);
 			
 	if($perm->is_admin($author_id) && $_SESSION['UID'] != $author_id) {
-		error::fatal(MESSAGE_ACCESS_DENIED);
+		error::fatal(m('Error: Access denied'));
 	}
 			
 	/* Dump the image. */
@@ -639,7 +649,7 @@ function delete_topic($id, $notify = true) {
 	log_mod('delete_topic', $id, $author_name);
 			
 	if($author_id != $_SESSION['UID'] && $notify) {
-		system_message($author_id, 'One of your topics was recently deleted. You can find its remains ['.URL.'topic/'.$id.' here].');
+		system_message($author_id, m('PM: Deleted topic', $id));
 	}
 }
 
@@ -652,7 +662,7 @@ function delete_reply($id, $notify = true) {
 	$author_name = trim($author_name . ' ' . $author_trip);
 			
 	if($perm->is_admin($author_id) && $_SESSION['UID'] != $author_id) {
-		error::fatal(MESSAGE_ACCESS_DENIED);
+		error::fatal(m('Error: Access denied'));
 	}
 			
 	$res = $db->q('SELECT parent_id, time FROM replies WHERE id = ?', $id);
@@ -683,7 +693,7 @@ function delete_reply($id, $notify = true) {
 	log_mod('delete_reply', $id, $author_name);
 			
 	if($author_id != $_SESSION['UID'] && $notify) {
-		system_message($author_id, 'One of your replies was recently deleted. You can find its remains ['.URL.'reply/'.$id.' here].');
+		system_message($author_id, m('PM: Deleted reply', $id));
 	}
 }
 
@@ -695,16 +705,16 @@ function delete_image($mode = 'reply', $post_id) {
 		error::fatal('Invalid image deletion type.');
 	}
 	
-	$img = $db->q('SELECT COUNT(*), file_name FROM images WHERE md5 IN (SELECT md5 FROM images WHERE '.$mode.'_id = ?)', $post_id);
+	$img = $db->q('SELECT COUNT(*), file_name FROM images WHERE md5 = (SELECT md5 FROM images WHERE '.$mode.'_id = ? LIMIT 1)', $post_id);
 	list($img_usages, $img_filename) = $img->fetch();
 	if($img_filename) {
 		if($img_usages == 1) {
 			/* Only one post uses this image. Delete the file. */
-			if(file_exists('img/'.$img_filename)) {
-				unlink('img/'.$img_filename);
+			if(file_exists(SITE_ROOT . '/img/' . $img_filename)) {
+				unlink(SITE_ROOT . '/img/' . $img_filename);
 			}
-			if(file_exists('thumbs/'.$img_filename)) {
-				unlink('thumbs/'.$img_filename);
+			if(file_exists(SITE_ROOT . '/thumbs/' . $img_filename)) {
+				unlink(SITE_ROOT . '/thumbs/' . $img_filename);
 			}
 		}
 		$db->q('DELETE FROM images WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
@@ -712,8 +722,12 @@ function delete_image($mode = 'reply', $post_id) {
 }
 
 /* Logs a moderator action. */
-function log_mod($action, $target, $param = '', $reason = '') {
+function log_mod($action, $target, $param = '', $reason = '', $mod = null) {
 	global $db;
+	
+	if( ! isset($mod)) {
+		$mod = $_SESSION['UID'];
+	}
 	
 	switch ($action) {
 		case 'delete_image':
@@ -770,7 +784,7 @@ function log_mod($action, $target, $param = '', $reason = '') {
 		'INSERT INTO mod_actions 
 		(action, type, target, mod_uid, mod_ip, reason, param, time) VALUES 
 		(?, ?, ?, ?, ?, ?, ?, ?)',
-		$action, $type, $target, $_SESSION['UID'], $_SERVER['REMOTE_ADDR'], $reason, $param, $_SERVER['REQUEST_TIME']
+		$action, $type, $target, $mod, $_SERVER['REMOTE_ADDR'], $reason, $param, $_SERVER['REQUEST_TIME']
 	);
 }
 
@@ -803,4 +817,5 @@ function get_styles() {
 	}
 	return $styles;
 }
+
 ?>

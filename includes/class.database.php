@@ -19,6 +19,12 @@ class Database extends PDO {
 
 		'params'   => array()
 	);
+	
+	/* The number of SQL queries issued. */
+	public $query_count = 0;
+	
+	/* The total time consumed by SQL queries, in seconds.*/
+	public $query_time  = 0;
 
 	/* Construct with our own statement class. */
 	public function __construct($username, $password, $server, $database) {
@@ -26,11 +32,17 @@ class Database extends PDO {
 		try {
 			parent::__construct($dsn, $username, $password);
 		} catch(PDOException $e) {
-			$message = str_replace(array($username, $password), array('', ''), $e->getMessage());
-			error::fatal('Database connection error. Message: ' . $message, true);
+			/* Rethrow with sensitive information stripped. (The trace remains very sensitive.) */
+			$message = str_replace
+			(
+				array($username, $password, $server, $database), 
+				array('', '', '(server)', '(database)'), 
+				$e->getMessage()
+			);
+			throw new DatabaseConnectionException($message);
 		}
 		$this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		$this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('MiniDBStatement', array($this)));
+		$this->setAttribute(PDO::ATTR_STATEMENT_CLASS, array('DatabaseStatement', array($this)));
 	}
 	
 	/* Execute a query (the first argument) with bound parameters (any additional arguments)*/
@@ -38,12 +50,8 @@ class Database extends PDO {
 		$values = func_get_args();
 		$query = array_shift($values);
 		
-		try {
-			$statement = $this->prepare($query);
-			$statement->execute($values);
-		} catch(PDOException $e) {
-			$this->error($e->getMessage());
-		}
+		$statement = $this->prepare($query);
+		$statement->execute($values);
 		
 		return $statement;
 	}
@@ -64,15 +72,11 @@ class Database extends PDO {
 		if( ! empty($this->sql['selects'])) {
 			$query = $this->mysql_build_select();
 		} else {
-			$this->error('No query was built before calling Database::exec().');
+			throw new Exception('No query was built before calling Database::exec().');
 		}
 		
-		try {
-			$statement = $this->prepare($query);
-			$statement->execute($this->sql['params']);
-		} catch(PDOException $e) {
-			$this->error($e->getMessage());
-		}
+		$statement = $this->prepare($query);
+		$statement->execute($this->sql['params']);
 
 		/* Reset SQL for our next query. */
 		$this->sql = null;
@@ -207,24 +211,10 @@ class Database extends PDO {
 		
 		return $this;
 	}
-	
-	/* Triggers an error */
-	private function error($message) {
-		global $perm;
-		
-		if( PHP_ERROR_SHOW || (is_object($perm) && $perm->is_admin()) ) {
-			$trace = next(debug_backtrace());
-			$message = 'A database error occurred on line <strong>' . $trace['line']. '</strong> of <strong>' . $trace['file'] . '</strong>. Message: "' . $message . '"';
-		} else {
-			$message = DB_ERROR_MESSAGE;
-		}
-		
-		error::fatal($message);
-	}
 }
 
 /* The prepared statement; returned by MiniDB->prepare() */
-class MiniDBStatement extends PDOStatement {
+class DatabaseStatement extends PDOStatement {
 	/* The handle. */
 	public $dbh;
 	protected function __construct($dbh) {
@@ -233,12 +223,14 @@ class MiniDBStatement extends PDOStatement {
 		
 	/* Wraps a timer around the execute function. */
 	public function execute($values) {
-		global $timer;
+		global $db;
 		
-		$timer->sql_start();
+		$query_start = microtime(true);
 		$res = parent::execute($values);
-		$timer->sql_stop();
+		$db->query_time += microtime(true) - $query_start;
+		$db->query_count++;
 	}
 }
 
+class DatabaseConnectionException extends Exception {}
 ?>

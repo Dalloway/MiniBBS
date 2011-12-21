@@ -2,7 +2,7 @@
 require './includes/bootstrap.php';
 
 if ( ! $perm->get('exterminate')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 $template->title = 'Exterminate trolls by phrase';
@@ -10,7 +10,7 @@ $template->title = 'Exterminate trolls by phrase';
 if ($_POST['exterminate']) {
 	// CSRF checking.
 	if( ! check_token()) {
-		error::fatal(MESSAGE_TOKEN_ERROR);
+		error::fatal(m('Error: Invalid token'));
 	}
 	
 	$_POST['phrase'] = str_replace("\r", '', $_POST['phrase']);

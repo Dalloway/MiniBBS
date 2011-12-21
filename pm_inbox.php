@@ -1,4 +1,6 @@
 <?php
+/* The following constant may be used by bootstrap.php, so it must come first. */
+define('REPRIEVE_BAN', true);
 require './includes/bootstrap.php';
 force_id();
 
@@ -64,20 +66,15 @@ while( $pm = $res->fetchObject() ) {
 		}
 	}
 	// If we're using the inbox, determine what should be in the "Author" field.
-	else if(empty($pm->name) && empty($pm->trip)) {
-		if($pm->source == 'system') {
-			$author = '<em>System</em>';
-		} else if($perm->get('view_profile')) {
-			$author = '<a href="'.DIR.'profile/' . $pm->source . '">' . $pm->source . '</a>';
-		} else {
-			$author = 'Anonymous';
-		}
+	else if($pm->source == 'system') {
+		$author = m('System');
 	} else {
-		$author = '<strong>' . htmlspecialchars($pm->name) . '</strong> ' . $pm->trip;
-		if($perm->get('view_profile')) {
-			$author = '<a href="'.DIR.'profile/' . $pm->source . '">' . $author . '</a>';
-		}
+		$author = format_name($pm->name, $pm->trip);
+		 if($perm->get('view_profile')) {
+			$author = '<a href="'.DIR.'profile/' . $pm->source . '">' . $pm->source . '</a>';
+		} 
 	}
+	
 	$values[] = $author;
 	
 	$values[] = '<a href="' . DIR . 'private_message/'.$pm->parent. ($new_pm != $new_parent ? '#reply_'.$new_pm : '') .'">' . parser::snippet($pm->contents) . '</a>';

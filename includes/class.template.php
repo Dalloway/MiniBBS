@@ -14,8 +14,8 @@ class Template {
 	/* The buffered content of the page. PRIVATE! For render() only! */
 	private $content = '';
 	
-	/* Should we disable the user's custom stylesheet? */
-	public $disable_custom = false;
+	/* The name of a theme to override the default. */
+	public $style_override = false;
 	
 	/* All "standard" links for the main menu; some of these will be unset by get_default_menu() */
 	public $menu_options = array 
@@ -44,8 +44,12 @@ class Template {
 		)
 	);
 	
+	/* Unix timestamp at script start */
+	private $start_time;
+		
 	/* Begin buffering for the template. */
-	public function __construct() {
+	public function __construct($start_time = null) {
+		$this->start_time = (is_null($start_time) ? microtime(true) : $start_time);
 		ob_start();
 	}
 	
@@ -81,9 +85,14 @@ class Template {
 	
 	/* Should we use the default stylesheet or the user's setting? */
 	public function get_stylesheet() {
+		if( $this->style_override !== false) {
+			return $this->style_override;
+		}
+		
 		if( ! isset($_SESSION['settings']['style']) || ! file_exists(SITE_ROOT . '/style/themes/' . $_SESSION['settings']['style'] . '.css')) {
 			return DEFAULT_STYLESHEET;
 		}
+		
 		return $_SESSION['settings']['style'];
 	}
 	
@@ -213,6 +222,18 @@ class Template {
 			break;
 		}
 		return $text;
+	}
+	
+	/* Returns the (current) total execution time, SQL execution time and SQL query count. */
+	public function get_stats() {
+		global $db;
+		
+		$stats['total_time'] = round(microtime(true) - $this->start_time, 3);
+		$stats['query_time'] = $db->query_time;
+		$stats['query_count'] = $db->query_count;
+		$stats['query_percent'] = round($stats['query_time'] * 100 / $stats['total_time']);
+		
+		return $stats;
 	}
 }
 

@@ -7,22 +7,25 @@ if(substr($requested_page, 0, strlen($base_path)) == $base_path){
 }
 $requested_page = ltrim($requested_page, '/');
 
+$error_message = m('Error: 404', htmlspecialchars(urldecode($requested_page)));
+
 $automatic = array
 (
 	'robots.txt',
 	'favicon.ico',
 	'favicon.png'
 );
+
 if(in_array($requested_page, $automatic)) {
 	header('HTTP/1.0 404 Not Found');
-	exit();
+	exit($error_message);
 }
 
 $res = $db->q('SELECT id, page_title, content, markup FROM pages WHERE url = ? AND deleted = 0', $requested_page);
 $cms_page = $res->fetchObject();
 
 if ( ! $cms_page) {
-	redirect('The page you requested (<strong>'.htmlspecialchars(urldecode($requested_page)).'</strong>) could not be located on the server.' . ($perm->get('cms') ? ' (Want to <a href="'.DIR.'new_page">create it?</a>)' : ''), '');
+	redirect($error_message . ($perm->get('cms') ? ' (Want to <a href="'.DIR.'new_page">create it?</a>)' : ''), '');
 }
 
 $template->title = $cms_page->page_title;

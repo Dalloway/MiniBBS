@@ -5,10 +5,10 @@ force_id();
 /* Check DEFCON */
 if( ! $perm->is_admin() && ! $perm->is_mod()) {
 	if(DEFCON < 3) { // DEFCON 2.
-		error::fatal(DEFCON_2_MESSAGE);
+		error::fatal(m('DEFCON 2'));
 	}
 	if(DEFCON < 4 && $_SESSION['post_count'] < POSTS_TO_DEFY_DEFCON_3) { // DEFCON 3.
-		error::fatal(DEFCON_3_MESSAGE);
+		error::fatal(m('DEFCON 3'));
 	}
 }
 
@@ -16,7 +16,7 @@ if( ! $perm->is_admin() && ! $perm->is_mod()) {
 if ($_GET['reply']) {
 
 	$reply = true;
-	$template->onload = 'focusId(\'body\'); init();';
+	$template->onload = 'focusId(\'body\');';
 	
 	if( ! $perm->get('post_reply')) {
 		error::fatal('You do not have permission to reply.');
@@ -88,7 +88,7 @@ if ($perm->get('edit') && ctype_digit($_GET['edit'])) {
 	}
 	
 	if($perm->is_admin($edit_data['author']) && ! $perm->is_admin()) {
-		error::fatal(MESSAGE_ACCESS_DENIED);
+		error::fatal(m('Error: Access denied'));
 	}
 	
 	if ($edit_data['author'] === $_SESSION['UID']) {
@@ -303,7 +303,7 @@ if ($_POST['form_sent']) {
 					// Update watchlists.
 					$db->q('UPDATE watchlists SET new_replies = 1 WHERE topic_id = ? AND uid != ?', $_GET['reply'], $_SESSION['UID']);
 					
-					$congratulation = 'Reply posted.';
+					$congratulation = m('Notice: Reply posted');
 				}
 			} else { // Editing.
 				if(error::valid()) {
@@ -312,7 +312,7 @@ if ($_POST['form_sent']) {
 						$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', 'reply', $_GET['edit'], $edit_data['body']);
 						log_mod('edit_reply', $_GET['edit'], $db->lastInsertId());
 					}
-					$congratulation = 'Reply edited.';
+					$congratulation = m('Notice: Reply edited');
 				}
 			}
 		} else { // Or a topic.
@@ -390,13 +390,13 @@ if ($_POST['form_sent']) {
 							$db->q('INSERT INTO poll_options (`parent_id`, `option`) VALUES (?, ?)', $inserted_id, $option);
 						}
 					}
-					$congratulation = 'Topic created.';
+					$congratulation = m('Notice: Topic created');
 				}
 				
 			} else { // Editing.
 				if( error::valid()) {
 					$res = $db->q('UPDATE topics SET headline = ?, body = ?, edit_mod = ?, edit_time = ? WHERE id = ?', $headline, $body, $edit_mod, $_SERVER['REQUEST_TIME'], $_GET['edit']);
-					$congratulation = 'Topic edited.';
+					$congratulation = m('Notice: Topic edited');
 					if($edit_mod) {
 						$db->q('INSERT INTO revisions (type, foreign_key, text) VALUES (?, ?, ?)', 'topic', $_GET['edit'], $edit_data['body']);
 						log_mod('edit_topic', $_GET['edit'], $db->lastInsertId());
@@ -602,7 +602,7 @@ if($_POST['form_sent']) {
 <?php
 	endif;
 ?>
-		<p>Please familiarize yourself with the <a href="<?php echo DIR; ?>markup_syntax">markup syntax</a> before posting.</p>
+		<p><?php echo m('Post: Help') ?></p>
 	</div>
 <?php	
 	if ( ! $watching_topic) {

@@ -105,7 +105,7 @@ switch($_GET['action']) {
 				if( ! is_null($option_id)) {
 					$db->q('UPDATE poll_options SET votes = votes + 1 WHERE id = ?', $option_id);
 					$db->q('UPDATE topics SET poll_votes = poll_votes + 1 WHERE id = ?', $id);
-					redirect('Thanks for voting.', 'topic/' . $id);
+					redirect(m('Notice: Voted'), 'topic/' . $id);
 				} else {
 					redirect(null, 'topic/' . $id);
 				}
@@ -134,7 +134,7 @@ switch($_GET['action']) {
 			switch($revision->type) {
 				case 'page':
 					if( ! $perm->get('cms')) {
-						error::fatal(MESSAGE_ACCESS_DENIED);
+						error::fatal(m('Error: Access denied'));
 					}
 					
 					$previous = $db->q('SELECT content FROM pages WHERE id = ?', $revision->foreign_key);
@@ -144,7 +144,7 @@ switch($_GET['action']) {
 				
 				case 'topic':
 					if( ! $perm->get('edit_others')) {
-						error::fatal(MESSAGE_ACCESS_DENIED);
+						error::fatal(m('Error: Access denied'));
 					}
 
 					$previous = $db->q('SELECT body FROM topics WHERE id = ?', $revision->foreign_key);
@@ -154,7 +154,7 @@ switch($_GET['action']) {
 				
 				case 'reply':
 					if( ! $perm->get('edit_others')) {
-						error::fatal(MESSAGE_ACCESS_DENIED);
+						error::fatal(m('Error: Access denied'));
 					}
 
 					$previous = $db->q('SELECT body FROM replies WHERE id = ?', $revision->foreign_key);
@@ -239,7 +239,7 @@ switch($_GET['action']) {
 		$id = $_GET['id'];
 		
 		if(isset($_POST['confirm'])) {
-			$db->q('UPDATE private_messages SET ignored = 0 WHERE source = ? and destination = ?', $source, $destination);
+			$db->q('UPDATE private_messages SET ignored = 0 WHERE id = ?', $id);
 			$db->q('DELETE from pm_ignorelist WHERE uid = ? AND ignored_uid = ?', $_SESSION['UID'], $source);
 			 
 			redirect('Your ignore list has been updated.', 'private_messages');
@@ -253,7 +253,7 @@ switch($_GET['action']) {
 		$id = $_GET['id'];
 		
 		if( ! $perm->get('read_mod_pms')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if(isset($_POST['confirm'])) {
@@ -270,7 +270,7 @@ switch($_GET['action']) {
 	
 	case 'delete_pm':
 		if( ! $perm->get('delete')){
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid PM ID.');
@@ -294,13 +294,13 @@ switch($_GET['action']) {
 	
 	case 'delete_all_pms':
 		if( ! $perm->get('delete_all_pms')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! id_exists($_GET['id'])) {
 			error::fatal('There is no such user.');
 		}
 		if($perm->is_admin($_GET['id']) || ($perm->is_mod($_GET['id']) && ! $perm->is_admin())) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		$id = $_GET['id'];
 		
@@ -341,7 +341,9 @@ switch($_GET['action']) {
 		
 		if(isset($_POST['confirm'])) {
 			if($perm->get('delete')) {
-				log_mod('delete_image', $id);
+				$res = $db->q('SELECT original_name FROM images WHERE ' . $type . '_id = ?', $id);
+				$original_name = $res->fetchColumn();
+				log_mod('delete_image', $id, $original_name);
 			} else if($post->author != $_SESSION['UID']) {
 				error::fatal('You are not the author of that post.');
 			} else if( $perm->get('edit_limit') != 0 && ($_SERVER['REQUEST_TIME'] - $post->time > $perm->get('edit_limit')) ) {
@@ -357,7 +359,7 @@ switch($_GET['action']) {
 	case 'delete_page':
 	
 		if( ! $perm->get('cms')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! ctype_digit($_GET['id'])) {
@@ -377,7 +379,7 @@ switch($_GET['action']) {
 	
 	case 'undelete_page':
 		if( ! $perm->get('cms')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! ctype_digit($_GET['id'])) {
@@ -398,7 +400,7 @@ switch($_GET['action']) {
 	case 'delete_bulletin':
 	
 		if( ! $perm->get('delete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! ctype_digit($_GET['id'])) {
@@ -418,7 +420,7 @@ switch($_GET['action']) {
 	
 	case 'undo_merge':
 		if( ! $perm->get('merge')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! ctype_digit($_GET['id'])) {
@@ -449,7 +451,7 @@ switch($_GET['action']) {
 	case 'unban_uid':
 	
 		if( ! $perm->get('ban')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! id_exists($_GET['id'])) {
@@ -472,7 +474,7 @@ switch($_GET['action']) {
 	case 'unban_ip':
 	
 		if( ! $perm->get('ban')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! filter_var($_GET['id'], FILTER_VALIDATE_IP)) {
@@ -495,7 +497,7 @@ switch($_GET['action']) {
 	case 'stick_topic':
 	
 		if( ! $perm->get('stick')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -514,7 +516,7 @@ switch($_GET['action']) {
 	case 'unstick_topic':
 	
 		if( ! $perm->get('stick')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -533,7 +535,7 @@ switch($_GET['action']) {
 	case 'lock_topic':
 	
 		if( ! $perm->get('lock')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -553,7 +555,7 @@ switch($_GET['action']) {
 	case 'unlock_topic':
 	
 		if( ! $perm->get('lock')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -573,7 +575,7 @@ switch($_GET['action']) {
 	case 'delete_topic':
 	
 		if( ! $perm->get('delete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -592,7 +594,7 @@ switch($_GET['action']) {
 	
 	case 'undelete_topic':
 		if( ! $perm->get('undelete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid topic ID.');
@@ -611,7 +613,7 @@ switch($_GET['action']) {
 	case 'delete_reply':
 	
 		if( ! $perm->get('delete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid reply ID.');
@@ -630,7 +632,7 @@ switch($_GET['action']) {
 	
 	case 'undelete_reply':
 		if( ! $perm->get('undelete')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		if( ! ctype_digit($_GET['id'])) {
 			error::fatal('Invalid reply ID.');
@@ -649,7 +651,7 @@ switch($_GET['action']) {
 	case 'delete_ip_ids':
 	
 		if( ! $perm->get('delete_ip_ids')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! filter_var($_GET['id'], FILTER_VALIDATE_IP)) {
@@ -664,11 +666,11 @@ switch($_GET['action']) {
 			
 			while($uid = $res->fetchColumn()) {
 				if($perm->is_admin($uid)) {
-					error::fatal(MESSAGE_ACCESS_DENIED);
+					error::fatal(m('Error: Access denied'));
 				}
 				
 				if($perm->is_mod($uid) && ! $perm->is_admin()) {
-					error::fatal(MESSAGE_ACCESS_DENIED);
+					error::fatal(m('Error: Access denied'));
 				}
 			}
 			$db->q('DELETE users, user_settings FROM users LEFT OUTER JOIN user_settings ON users.uid=user_settings.uid WHERE users.ip_address = ?', $id);
@@ -681,15 +683,15 @@ switch($_GET['action']) {
 	case 'nuke_id':
 	
 		if( ! $perm->get('nuke_id')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if($perm->is_admin($_GET['id'])) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if($perm->is_mod($_GET['id']) && ! $perm->is_admin()) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! id_exists($_GET['id'])) {
@@ -737,7 +739,7 @@ switch($_GET['action']) {
 	case 'nuke_ip':
 	
 		if( ! $perm->get('nuke_ip')) {
-			error::fatal(MESSAGE_ACCESS_DENIED);
+			error::fatal(m('Error: Access denied'));
 		}
 		
 		if( ! filter_var($_GET['id'], FILTER_VALIDATE_IP)) {
@@ -751,11 +753,11 @@ switch($_GET['action']) {
 			$res = $db->q('SELECT uid FROM users WHERE ip_address = ?', $id);
 			while($uid = $res->fetchColumn()){
 				if($perm->is_admin($uid)) {
-					error::fatal(MESSAGE_ACCESS_DENIED);
+					error::fatal(m('Error: Access denied'));
 				}
 				
 				if($perm->is_mod($uid) && ! $perm->is_admin()) {
-					error::fatal(MESSAGE_ACCESS_DENIED);
+					error::fatal(m('Error: Access denied'));
 				}
 			}
 			

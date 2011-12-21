@@ -3,8 +3,6 @@
  * This file is included from class.template.php's load() function.
  * $this references variables and functions within that class.
  */
-global $timer;
-
 $this->gzhandler();
 ?>
 <!DOCTYPE html>
@@ -14,17 +12,12 @@ $this->gzhandler();
 	<title><?php echo strip_tags($this->title) . ' — ' . SITE_TITLE ?></title>
 	<link rel="icon" type="image/png" href="<?php echo DIR ?>favicon.png" />
 	
-<?php	
-	if($_SESSION['settings']['style'] != 'Custom only'): 
-?>
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?14" />
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
-<?php
-	endif;
-	
-	if($_SESSION['settings']['custom_style'] && ! $this->disable_custom):
+<?php	
+	if($_SESSION['settings']['custom_style'] && $this->style_override === false):
 ?>
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR; ?>custom_style<?php echo (isset($_SESSION['style_last_modified']) ? '/' . (int) $_SESSION['style_last_modified'] : '' ) ?>" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR; ?>custom_style/<?php echo $_SESSION['settings']['custom_style'] ?>/<?php echo (int) $_SESSION['style_last_modified'] ?>" />
 <?php
 	endif;
 	
@@ -53,7 +46,7 @@ $this->gzhandler();
 <?php
 if( ! empty($_SESSION['notice'])):
 ?>
-<div id="notice" ondblclick="this.parentNode.removeChild(this);"><strong>Notice</strong>: <?php echo $_SESSION['notice'] ?></div>
+<div id="notice" ondblclick="this.parentNode.removeChild(this);"><?php echo m('Notice label') ?> <?php echo $_SESSION['notice'] ?></div>
 <?php
 	unset($_SESSION['notice']);
 endif;
@@ -98,9 +91,9 @@ endforeach;
 <h2><?php echo $this->title ?></h2>
 <?php
 echo $this->content;
-$timer->stop();
+$stats = $this->get_stats();
 ?>
-<div id="footer" class="unimportant">Powered by <strong><a href="http://minibbs.org">MiniBBS</a></strong>. This page was generated in <strong><?php echo round($timer->total, 3) ?></strong> seconds. <?php echo round($timer->sql_total*100/$timer->total) ?>% of that was spent running <strong><?php echo (int) $timer->sql_count ?></strong> SQL queries. <noscript><br />Note: Your browser's JavaScript is disabled; some site features may not fully function.</noscript></div>
+<div id="footer" class="unimportant"><?php echo m('Footer', $stats['total_time'], $stats['query_percent'], $stats['query_count']) ?></div>
 
 <form id="quick_action" action="" method="post" class="noscreen">
 	<?php csrf_token() ?>

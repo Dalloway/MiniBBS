@@ -4,7 +4,7 @@ force_id();
 $template->title = 'Ban user';
 
 if( ! $perm->get('ban')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if ( ! empty($_POST['target'])) {
@@ -48,13 +48,20 @@ if ( ! empty($_POST['target'])) {
 		
 		/* Ban last IP of UID */
 		if($type == 'uid' && isset($_POST['autoban_ip'])) {
-			$res = $db->q('SELECT author_ip FROM replies WHERE author = ? ORDER BY time DESC LIMIT 1', $_POST['target']);
-			$last_ip = $res->fetchColumn();
-			if($last_ip && ! $perm->is_banned($last_ip)) {
-				$db->q('INSERT IGNORE INTO bans (target) VALUES (?)', $last_ip);
-				log_mod('ban_ip', $last_ip, $ban_expiry, trim($_POST['reason'] . ' (autoban)'));
-			} else {
-				unset($last_ip);
+			/* Check that we have permission to view this ID's IP. */
+			$res = $db->q('SELECT post_count, first_seen FROM users WHERE uid = ?', $_POST['target']);
+			$uid = $res->fetchObject();
+			
+			if( ! $perm->get('limit_ip') || $perm->get('limit_ip_max') > $uid->post_count || $uid->first_seen > $_SERVER['REQUEST_TIME'] - 86400) {
+				$res = $db->q('SELECT author_ip FROM replies WHERE author = ? ORDER BY time DESC LIMIT 1', $_POST['target']);
+				$last_ip = $res->fetchColumn();
+				
+				if($last_ip && ! $perm->is_banned($last_ip)) {
+					$db->q('INSERT IGNORE INTO bans (target) VALUES (?)', $last_ip);
+					log_mod('ban_ip', $last_ip, $ban_expiry, trim($_POST['reason'] . ' (autoban)'));
+				} else {
+					unset($last_ip);
+				}
 			}
 		}
 		
