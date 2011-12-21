@@ -5,7 +5,7 @@ $template->title = 'New bulletin';
 $template->onload = "focusId('bulletin');";
 
 if( ! $perm->get('bulletin')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 if($_SESSION['post_count'] < MIN_BULLETIN_POSTS && ! $perm->is_admin()) {
 	error::fatal('Sorry, only regulars can post bulletins. You currently have ' . $_SESSION['post_count'] . ' posts, but need ' . MIN_BULLETIN_POSTS. '.');

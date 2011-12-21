@@ -4,7 +4,7 @@ force_id();
 $template->title = 'Ban user';
 
 if( ! $perm->get('ban')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if ( ! empty($_POST['target'])) {

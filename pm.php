@@ -1,5 +1,5 @@
 <?php
-// The following variable is used by bootstrap.php, so it must come first.
+/* The following variable is used by bootstrap.php, so it must come first. */
 $reading_pm = true;
 define('REPRIEVE_BAN', true);
 require './includes/bootstrap.php';
@@ -17,41 +17,39 @@ if($perm->is_banned($_SESSION['UID'])) {
 	$has_appealed = $perm->get_ban_appeal($_SERVER['REMOTE_ADDR']);
 }
 
-// Select the PM and its children.
+/* Select the PM and its children. */
 $res = $db->q
 (
-	'SELECT private_messages.id, private_messages.source, private_messages.parent, private_messages.destination, private_messages.contents, private_messages.time, private_messages.name, private_messages.trip, private_messages.topic, private_messages.reply, private_messages.ignored, topics.headline AS topic_headline, replies.namefag AS reply_name, replies.tripfag AS reply_trip
+	'SELECT id, source, parent, destination, contents, time, name, trip, topic, reply, ignored
 	FROM `private_messages` 
-	LEFT OUTER JOIN `topics` ON private_messages.topic = topics.id
-	LEFT OUTER JOIN `replies` ON private_messages.reply = replies.id
-	WHERE private_messages.id = ? OR private_messages.parent = ? 
-	ORDER BY private_messages.id', 
+	WHERE id = ? OR parent = ? 
+	ORDER BY id', 
 	$_GET['id'], $_GET['id']
 );
 
-// Check if we have a message.
-if($db->num_rows() == 0) {
+/* Assign variables for the first PM. This is repeated in the truth expression of the do-while below. */
+$pm = $res->fetchObject();
+
+if( ! $pm) {
 	$template->title = 'Non-existent message';
 	error::fatal('There is no such private message.');
 }
 
-// Assign variables for the first PM. This is repeated in the truth expression of the do-while below.
-$pm = $res->fetchObject();
 $op_destination = $pm->destination;
 
-// Administrators can read all messages.
+/* Administrators can read all messages. */
 if( ! $perm->get('read_admin_pms')) {
-	// If the message isn't a group PM, and the user didn't send or receive it, deny access.
+	/* If the message isn't a group PM, and the user didn't send or receive it, deny access. */
 	if($pm->destination !== $_SESSION['UID'] && $pm->source !== $_SESSION['UID'] && $pm->destination != 'mods' && $pm->destination != 'admins') {
 		error::fatal('This message is not addressed to you.');
 	}
-	// If the message is a group PM, but the user isn't the sender or a member of the group, deny access.
+	/* If the message is a group PM, but the user isn't the sender or a member of the group, deny access. */
 	if(	($pm->destination == 'admins' && $pm->source !== $_SESSION['UID']) || ($pm->destination == 'mods' && $pm->source !== $_SESSION['UID'] && !$perm->get('read_mod_pms')) ) {
-		error::fatal(MESSAGE_ACCESS_DENIED);
+		error::fatal(m('Error: Access denied'));
 	}
 }
 
-// If this message is a reply to another PM, redirect to the parent.
+/* If this message is a reply to another PM, redirect to the parent. */
 if($pm->parent !== $_GET['id']) {
 	redirect('', 'private_message/' . $pm->parent);
 }
@@ -77,17 +75,16 @@ if($pm->source == 'system') {
 	</tr>
 </thead> 
 <tbody>
-<?php
-// Output the messages. 
+<?php 
 $participants = array();
 $i = 0;
 do {
-	// Prepare the author.
+	/* Prepare the author. */
 	if( ! array_key_exists($pm->source, $participants)) {
 		$participants[$pm->source] = count($participants);
 	}
 	if($pm->source == 'system') {
-		$author = '<em>System</em>';
+		$author = m('System');
 	} else {
 		$author = '<span class="poster_number_' . $participants[$pm->source] . '">' . format_name($pm->name, $pm->trip, $perm->get('link', $pm->source), $participants[$pm->source]) . '</span>';
 		if($pm->source == $_SESSION['UID']) {
@@ -100,15 +97,22 @@ do {
 		<td class="pm_body" id="reply_<?php echo $pm->id?>">
 <?php 
 			echo parser::parse($pm->contents);
-			// If this message was sent via a "PM" link in a topic, provide context.
-			if( ! empty($pm->topic_headline)) {
-				if(empty($pm->reply_name) && empty($pm->reply_trip)) {
-					$reply_author = 'Anonymous';
-				} else {
-					$reply_author = '<strong>' . htmlspecialchars($pm->reply_name) . '</strong> ' . htmlspecialchars($pm->reply_trip);
+			
+			/* If this message was sent via a "PM" link in a topic, provide context (first PM only). */
+			if( ! empty($pm->topic)) {
+				$tmp = $db->q('SELECT headline, body, namefag, tripfag FROM topics WHERE id = ?', $pm->topic);
+				$topic = $tmp->fetchObject();
+				$recipient_name = $topic->namefag;
+				$recipient_trip = $topic->tripfag;
+				
+				if( ! empty($pm->reply)) {
+					$tmp = $db->q('SELECT namefag, tripfag, body FROM replies WHERE id = ?', $pm->reply);
+					$reply = $tmp->fetchObject();
+					$recipient_name = $reply->namefag;
+					$recipient_trip = $reply->tripfag;
 				}
 				
-				echo '<p class="unimportant">(This message was sent via '. ($pm->destination==$_SESSION['UID'] ? 'your' : 'the recipient\'s') .' ' . (empty($pm->reply) ? 'original post' : '<a href="'.DIR.'reply/'.$pm->reply.'">reply</a> as ' . $reply_author) . ' in "<strong><a href="'.DIR.'topic/' . $pm->topic . '">' . htmlspecialchars($pm->topic_headline) . '</a></strong>".)</p>';
+				echo '<p class="unimportant">(This message was sent via '. ($pm->destination==$_SESSION['UID'] ? 'your' : 'the recipient\'s') .' ' . (empty($pm->reply) ? 'original post' : '<a href="'.DIR.'reply/'.$pm->reply.'" class="help" title="' . parser::snippet($reply->body) . '">reply</a>') . ' as ' . format_name($recipient_name, $recipient_trip) . ' in "<strong><a href="'.DIR.'topic/' . $pm->topic . '" class="help" title="' . parser::snippet($topic->body) . '">' . htmlspecialchars($topic->headline) . '</a></strong>".)</p>';
 			}
 ?>
 
@@ -133,7 +137,7 @@ do {
 				<li><a href="<?php echo DIR ?>dismiss_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really dismiss this PM?');">Dismiss</a></li>
 <?php 
 			endif;
-			if($pm->ignored):
+			if($pm->ignored && $_SESSION['UID'] == $pm->destination):
 ?>
 				<li><a href="<?php echo DIR ?>unignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really stop ignoring PMs from this user?');">Unignore</a></li>
 <?php 
@@ -154,7 +158,7 @@ do {
 </table>
 
 <?php
-// Banned users can read PMs, but not reply.
+/* Banned users can read PMs, but not reply. */
 if(empty($has_appealed) && ! isset($system_pm)): 
 ?>
 <ul class="menu">

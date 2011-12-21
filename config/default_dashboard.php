@@ -23,7 +23,7 @@ $default_dashboard = array (
 		'max_length' => 100
 	),
 	'custom_menu' => array (
-		'default' => '',
+		'default' => DEFAULT_MENU,
 		'max_length' => 600
 	),
 	'topics_mode' => array (
@@ -48,7 +48,7 @@ $default_dashboard = array (
 	),
 	'custom_style' => array (
 		'default' => '0',
-		'type' => 'bool'
+		'type' => 'int'
 	),
 	'snippet_length' => array (
 		'default' => '80',

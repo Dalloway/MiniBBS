@@ -8,7 +8,7 @@ if($_SESSION['post_count'] < 1) {
 }
 
 if( ! $perm->get('report')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if(ctype_digit($_GET['reply'])) {
@@ -57,7 +57,7 @@ if(isset($_POST['reason'])) {
 
 error::output();
 ?>
-<p>The report feature should be used to inform moderators of rule-breaking content. Please do not report a post simply because you disagree with it.</p>
+<p><?php echo m('Report: Help') ?></p>
 
 <form action="" method="post">
 	<?php csrf_token() ?>

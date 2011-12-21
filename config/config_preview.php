@@ -20,7 +20,7 @@ $db_info = array
 	
 define('HOSTNAME', '%%HOSTNAME%%');
 define('DIR', '%%DIRECTORY%%');
-define('URL', ($_SERVER['HTTPS'] && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://') . HOSTNAME . DIR);
+define('URL', (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://') . HOSTNAME . DIR);
 define('SITE_FOUNDED', %%FOUNDED%%);
 
 /* Should details of any PHP or database errors be shown to non-administrators? (Administrators will only see if the error occurs after authentication). This does not apply to E_PARSE or E_ERROR, just warnings. */

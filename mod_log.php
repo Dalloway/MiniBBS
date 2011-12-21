@@ -10,10 +10,12 @@ if($page->current === 1) {
 	$template->title = 'Mod logs, page #' . number_format($page->current);
 }
 
+setcookie('last_mod_action', $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'] + 315569260, '/');
+
 $res = $db->q('SELECT COUNT(*) FROM mod_actions WHERE time > (? - 86400)', $_SERVER['REQUEST_TIME']);
 $todays_count = $res->fetchColumn();
 
-$res = $db->q('SELECT mod_uid, COUNT(*) AS action_count FROM mod_actions GROUP BY mod_uid ORDER BY action_count DESC');
+$res = $db->q("SELECT mod_uid, COUNT(*) AS action_count FROM mod_actions WHERE mod_uid != 'system' GROUP BY mod_uid ORDER BY action_count DESC");
 /* Filter out junk from the resulting array. */
 $stats = array_map('reset', array_map('reset', $res->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC)));
 $total = array_sum($stats);
@@ -107,18 +109,26 @@ function censor_ip($ip) {
 }
 
 while( $log = $res->fetchObject() ) {
-	$mod_name = $perm->get_name($log->mod_uid);
-	if(empty($mod_name)) {
-		$mod_name = '?';
-	}
-	
-	if ($perm->get('view_profile')) {
-		$mod_name = '<a href="'.DIR.'profile/' . $log->mod_uid . '">' . $mod_name . '</a>';
+	if($log->mod_uid === 'system') {
+		$mod_name = m('System');
+	} else {
+		$mod_name = $perm->get_name($log->mod_uid);
+		if(empty($mod_name)) {
+			$mod_name = '?';
+		}
+		
+		if ($perm->get('view_profile')) {
+			$mod_name = '<a href="'.DIR.'profile/' . $log->mod_uid . '">' . $mod_name . '</a>';
+		}
 	}
 	
 	switch($log->action) {
+		case 'db_maintenance':
+			$action = 'Cleaned up the database; ' . number_format($log->param) . ' rows removed.';
+		break;
+	
 		case 'delete_image': 
-			$action = 'Deleted an image.';
+			$action = 'Deleted an image ('.htmlspecialchars($log->param).').';
 		break;
 		
 		case 'delete_page':
@@ -258,7 +268,7 @@ while( $log = $res->fetchObject() ) {
 			
 			$log->param = trim($log->param);
 			if(empty($log->param)) {
-				$action .= ' by Anonymous.';
+				$action .= ' by ' . m('Anonymous') . '.';
 			} else {
 				$action .= ' by ' . htmlspecialchars($log->param) . '.';
 			}
@@ -277,7 +287,7 @@ while( $log = $res->fetchObject() ) {
 			
 			$log->param = trim($log->param);
 			if(empty($log->param)) {
-				$action .= ' by Anonymous.';
+				$action .= ' by ' . m('Anonymous') . '.';
 			} else {
 				$action .= ' by ' . htmlspecialchars($log->param) . '.';
 			}
@@ -416,7 +426,16 @@ while( $log = $res->fetchObject() ) {
 		$action,
 		'<span class="help" title="' . format_date($log->time) . '">' . age($log->time) . '</span>'
 	);
-	$table->row($values);
+	
+	$row_class = '';
+	if($log->time > $_COOKIE['last_mod_action']) {
+		$new_items = true;
+	} else if($new_items) {
+		$row_class = 'last_seen_marker';
+		$new_items = false;
+	}
+	
+	$table->row($values, $row_class);
 }
 
 $table->output('(No mod actions to display.)');

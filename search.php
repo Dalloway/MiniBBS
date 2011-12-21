@@ -45,10 +45,10 @@ if( ! empty($_GET['q'])) {
 		
 		$reply_results = $db->q
 		(
-			'SELECT replies.id, replies.parent_id, replies.time, replies.body, replies.namefag, replies.tripfag, topics.headline, topics.time
+			'SELECT replies.id, replies.parent_id, replies.time, replies.body, replies.namefag, replies.tripfag, topics.headline
 			FROM replies
 			INNER JOIN topics ON replies.parent_id = topics.id
-			WHERE replies.body LIKE ? AND topics.deleted = 0
+			WHERE replies.body LIKE ? AND topics.deleted = 0 AND replies.deleted = 0
 			ORDER BY replies.time DESC
 			LIMIT ' . $page->offset . ', ' . $page->limit, 
 			$query_sql
@@ -59,7 +59,7 @@ if( ! empty($_GET['q'])) {
 }
 
 ?>
-<p>The search is not keyword-based; you must type an exact phrase.</p>
+<p><?php echo m('Search: Help') ?></p>
 
 <form action="" method="post">
 	<div class="row">
@@ -101,23 +101,12 @@ if(isset($topic_results)) {
 		if($query_pos !== false) {
 			$snippet = preg_replace('/(' . $search_query_p . ')/i', '<em class="marked">$1</em>', $snippet);
 		}
-		
-		if($topic->namefag) {
-			$author = '<strong>'.htmlspecialchars($topic->namefag).'</strong>';
-		if($topic->tripfag) {
-			$author = '<span class="help" title="'.$topic->tripfag.'">' . $author . '</span>';
-		}
-		} else if($topic->tripfag) {
-			$author = $topic->tripfag;
-		} else {
-			$author = 'Anonymous';
-		}
-		
+				
 		$values = array
 		(
 			format_headline($headline, $topic->id, $topic->replies, $topic->poll, $topic->locked, $topic->sticky),
 			$snippet,
-			$author,
+			format_name($topic->namefag, $topic->tripfag, null, null, true),
 			replies($topic->id, $topic->replies),
 			'<span class="help" title="' . format_date($topic->time) . '">' . age($topic->time) . '</span>'
 		);
@@ -166,23 +155,12 @@ if(isset($topic_results)) {
 			$snippet = preg_replace('/(' . $search_query_p . ')/i', '<em class="marked">$1</em>', $snippet);
 		}
 		$snippet = '<a href="'.DIR.'topic/'.$reply->parent_id.'#reply_'.$reply->id.'">' . $snippet . '</a>';
-		
-		if($reply->namefag) {
-			$author = '<strong>'.htmlspecialchars($reply->namefag).'</strong>';
-		if($reply->tripfag) {
-			$author = '<span class="help" title="'.$reply->tripfag.'">' . $author . '</span>';
-		}
-		} else if($reply->tripfag) {
-			$author = $reply->tripfag;
-		} else {
-			$author = 'Anonymous';
-		}
-		
+				
 		$values = array
 		(
 			$snippet,
 			$headline,
-			$author,
+			format_name($reply->namefag, $reply->tripfag, null, null, true),
 			'<span class="help" title="' . format_date($reply->time) . '">' . age($reply->time) . '</span>'
 		);
 		
@@ -201,7 +179,7 @@ if(isset($topic_results)) {
 	}
 	
 	if($topic_count + $reply_count == 0) {
-		echo '<p>(No matches. Sorry.)</p>';
+		echo '<p>' . m('Search: No results') . '</p>';
 	}
 }
 $page->navigation('search/' . urlencode($search_query), max(array($topic_count, $reply_count)));

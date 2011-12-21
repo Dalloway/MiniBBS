@@ -3,7 +3,7 @@ require './includes/bootstrap.php';
 force_id();
 
 if( ! $perm->get('merge')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if( ! ctype_digit($_GET['id'])) {

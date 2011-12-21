@@ -341,22 +341,23 @@ $tables['revisions'] = "CREATE TABLE IF NOT EXISTS `revisions` (
   PRIMARY KEY ( `id` )
 ) ENGINE = MYISAM DEFAULT CHARSET=utf8;";
 
-/* Set-up the environment */
+/* Set up the environment */
 define('SITE_ROOT', realpath(dirname(__FILE__)));
 require SITE_ROOT . '/includes/functions.php';
 spl_autoload_register('load_class');
 get_magic_quotes_runtime() and ini_set('magic_quotes_runtime', 0);
+@set_time_limit(0);
 if(get_magic_quotes_gpc()) {
 	stripslashes_from_array($_GET);
 	stripslashes_from_array($_POST);
 }
 
 /* Make sure we can install */
-if(file_exists(SITE_ROOT . '/includes/config.php')) {
+if(file_exists(SITE_ROOT . '/config/config.php')) {
 	exit('Judging by the existence of config.php, MiniBBS is already installed.');
 }
-if( ! file_exists(SITE_ROOT . '/includes/config_preview.php')) {
-	exit('Unable to find /includes/config_preview.php.');
+if( ! file_exists(SITE_ROOT . '/config/config_preview.php')) {
+	exit('Unable to find /config/config_preview.php.');
 }
 if(phpversion() < 5.2) {
 	exit('MiniBBS requires PHP 5.2 or greater; you appear to be running ' . phpversion() . '.');
@@ -388,7 +389,7 @@ if(isset($_POST['form_sent'])) {
 	$input['hostname'] = rtrim($input['hostname'], '/');
 	
 	/* Prepare config.php */
-	$config_template = file_get_contents(SITE_ROOT . '/includes/config_preview.php');
+	$config_template = file_get_contents(SITE_ROOT . '/config/config_preview.php');
 	$hard_config = array
 	(
 		'%%DB_USERNAME%%' => $input['db_username'],
@@ -411,16 +412,19 @@ if(isset($_POST['form_sent'])) {
 	
 	/* Try setting up the database*/
 	try {
-		$dsn = 'mysql:host=' . $input['db_server'] . ';port=3306;dbname=' . $input['db_name'];
-		$db = new PDO($dsn, $input['db_username'], $input['db_password']);
+		$db = new Database($input['db_username'], $input['db_password'], $input['db_server'], $input['db_name']);
+	} catch(DatabaseConnectionException $e) {
+		error::add('Unable to connect to the database; recheck your settings. Error message: ' . $e->getMessage());
+	}
 		
+	if(error::valid()) {
 		/* Create tables */
 		foreach($tables as $table => $query) {
 			$db->query($query) or error::add('Failed to create table "'.$table.'".');
 		}
 		
-		$user_id   = uniqid('', true);
-		$password  = generate_password();
+		$user_id = uniqid('', true);
+		$password = generate_password();
 		
 		/* Create admin account */
 		$db->query
@@ -450,78 +454,40 @@ if(isset($_POST['form_sent'])) {
 		/* Mark-up page */
 		$db->query("INSERT IGNORE INTO `pages` (`id`, `url`, `page_title`, `content`, `markup`) VALUES
 (1, 'markup_syntax', 'Markup syntax', '<table>\r\n<thead>\r\n<tr>\r\n<th class=\"minimal\">Output</th>\r\n<th>Input</th>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><em>Italic</em></td>\r\n<td><kbd>''''Italic''''</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><strong>Bold</strong></td>\r\n<td><kbd>''''''Bold''''''</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><span class=\"spoiler\">Spoiler</span> ? <span class=\"unimportant\">Hover over me!</span></td>\r\n<td><kbd>**Spoiler**</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><u>Underline</u></td>\r\n<td><kbd>[u]Underline[/u]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><s>Strikethrough</s></td>\r\n<td><kbd>[s]Strikethrough[/s]</kbd></td>\r\n</tr>\r\n\r\n<tr><td class=\"minimal\"><span class=\"highlight\">Highlights</span></td>\r\n<td><kbd>[hl]Highlights[/hl]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><h4 class=\"user\">Header</h4></td>\r\n<td><kbd>==Header==</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Quote</span></td>\r\n<td><kbd>> Quote</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\"><a href=\"http://example.com/\">Link text</a></td>\r\n<td><kbd>[http://example.com/ Link text]</kbd></td>\r\n</tr>\r\n\r\n<tr>\r\n<td class=\"minimal\"><span class=\"quote\"><strong>></strong> Block</span><br /><span class=\"quote\"><strong>></strong> quote</span></td>\r\n<td><kbd>[quote]Block<br />quote[/quote]</kbd></td>\r\n</tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><div class=\"border\">Bordered text</div></td>\r\n<td><kbd>[border]Bordered text[/border]</kbd> - <span class=\"unimportant\">Use this when quoting from external sources.</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><pre>Code</pre></td>\r\n<td><kbd>[code]Code[/code]</kbd> - <span class=\"unimportant\">Use this when pasting code or ASCII art</span></td></tr>\r\n\r\n<tr class=\"odd\"><td class=\"minimal\"><pre style=\"font-family:IPAMonaPGothic,Mona,''MS PGothic'';font-size:16px;\">Shift JIS</pre></td>\r\n<td><kbd>[aa]Shift JIS[/aa]</kbd> - <span class=\"unimportant\">Use for Shift JIS ASCII art</span></td></tr>\r\n\r\n<tr><td class=\"minimal\"><div class=\"php\" style=\"background-color:#F0F0F0;border:#E1E1E1;padding:0.5em\"><code><span style=\"color: #000000\">\r\n<span style=\"color: #0000BB\">&lt;?php </span><span style=\"color: #007700\">echoÂ </span><span style=\"color: #DD0000\">''lorem ipsum''</span><span style=\"color: #007700\">;</span><span style=\"color: #0000BB\"> ?></span></span></div></td>\r\n<td><kbd>[php]&lt;?php echo ''lorem ipsum''; ?>[/php]</kbd> - <span class=\"unimportant\">Use to highlight PHP</span></td></tr>\r\n\r\n<tr class=\"odd\">\r\n<td class=\"minimal\">[noparse]''''''not [s]parsed[/s]''''''[/noparse]</td>\r\n<td><kbd>''''''not [s]parsed[/s]''''''</kbd></td>\r\n</tr>\r\n\r\n</tbody>\r\n</table>', 0)") or error::add('Failed to insert pages.');
-		/* Default config */
+
+		/* Load default config */
+		require SITE_ROOT . '/config/default_config.php';
+		
+		/* Replace a few values with our own settings */
+		$config_defaults['SITE_TITLE']            = $input['board_name'];
+		$config_defaults['RECAPTCHA_PUBLIC_KEY']  = $input['captcha_public'];
+		$config_defaults['RECAPTCHA_PRIVATE_KEY'] = $input['captcha_private'];
+		$config_defaults['SALT']                  = generate_password();
+		$config_defaults['TRIP_SEED']             = generate_password();
+		
+		/* Build the SQL query */
+		$config_values = '';
+		foreach($config_defaults as $key => $value) {
+			$config_values .= '(' . $db->quote($key) . ', ' . $db->quote($value) . '), ';
+		}
+		$config_values = rtrim($config_values, ',');
+		
+		/* Insert config */
 		$db->query
 		(
-			"INSERT IGNORE INTO `config` (`name`, `value`) VALUES
-			('SITE_TITLE', ".$db->quote($input['board_name'])."),
-			('MAILER_ADDRESS', 'noreply@minibbs.org'),
-			('POSTS_PER_PAGE_DEFAULT', '100'),
-			('RECAPTCHA_ENABLE', '1'),
-			('RECAPTCHA_PUBLIC_KEY', ".$db->quote($input['captcha_public'])."),
-			('RECAPTCHA_PRIVATE_KEY', ".$db->quote($input['captcha_private'])."),
-			('RECAPTCHA_NOTICE', '<p>Please fill in the following CAPTCHA to continue:</p>'),
-			('RECAPTCHA_MAX_UIDS_PER_HOUR', '10'),
-			('RECAPTCHA_MAX_SEARCHES_PER_MIN', '3'),
-			('MESSAGE_ACCESS_DENIED', 'You do not have permission to access that.'),
-			('MESSAGE_TOKEN_ERROR', 'Your session expired. Try again.'),
-			('DEFCON_2_MESSAGE', 'Posting has been temporarly disabled for all users.'),
-			('DEFCON_3_MESSAGE', 'Posting has been temporarly disabled for non-regulars.'),
-			('DEFCON_4_MESSAGE', 'Creation of new accounts has been temporarly disabled. If you already have an account, you should restore it.'),
-			('ALLOW_IMAGES', '1'),
-			('MAX_IMAGE_SIZE', '6242880'),
-			('MAX_IMAGE_DIMENSIONS', '240'),
-			('MAX_GIF_DIMENSIONS', '200'),
-			('IMAGEMAGICK', '0'),
-			('FANCY_IMAGE', '0'),
-			('EMBED_VIDEOS', '1'),
-			('DEFAULT_STYLESHEET', 'Gmail Cloudy'),
-			('SALT', ".$db->quote(generate_password())."),
-			('STRETCH', '15'),
-			('USE_SHA256', '1'),
-			('TRIP_SEED', ".$db->quote(generate_password())."),
-			('MOD_GZIP', '1'),
-			('ALLOW_BAN_APPEALS', '1'),
-			('ALLOW_BAN_READING', '1'),
-			('ITEMS_PER_PAGE', '50'),
-			('MAX_LENGTH_HEADLINE', '100'),
-			('MIN_LENGTH_HEADLINE', '3'),
-			('MAX_LENGTH_BODY', '30000'),
-			('MIN_LENGTH_BODY', '3'),
-			('MAX_LINES', '450'),
-			('MEMORABLE_TOPICS', '1250'),
-			('REQUIRED_LURK_TIME_REPLY', '10'),
-			('REQUIRED_LURK_TIME_TOPIC', '10'),
-			('FLOOD_CONTROL_REPLY', '10'),
-			('FLOOD_CONTROL_TOPIC', '30'),
-			('DEFAULT_MENU', 'Bumps New_topic Watchlist Activity Stuff You'),
-			('POSTS_TO_DEFY_SEARCH_DISABLED', '5'),
-			('POSTS_TO_DEFY_DEFCON_3', '5'),
-			('ALLOW_USER_PM', '1'),
-			('POSTS_FOR_USER_PM', '5'),
-			('FLOOD_CONTROL_PM', '20'),
-			('MAX_GLOBAL_PM', '35'),
-			('MIN_BULLETIN_POSTS', '50'),
-			('FLOOD_CONTROL_BULLETINS', '600'),
-			('BULLETINS_ON_INDEX', '2'),
-			('AUTOLOCK', '0'),
-			('IMGUR_KEY', '')"
+			"INSERT IGNORE INTO `config` (`name`, `value`) VALUES " . $config_values
 		) or error::add('Failed to insert config');
 		
 		/* Now create our config file */
 		if(error::valid()) {
-			if( ! file_put_contents(SITE_ROOT . '/includes/config.php', $config_template)) {
+			if( ! @file_put_contents(SITE_ROOT . '/config/config.php', $config_template)) {
 				error::add('Unable to create config.php.');
 			} else {
 				header('Location: http://' . $input['hostname'] . $input['directory'] . 'restore_ID/' . $user_id . '/' . $password);
 				exit();
 			}
 		}
-	} catch(PDOException $e) {
-		error::add('Unable to connect to the database; recheck your settings. Error message: ' . $e->getMessage());
-	}
-	
-	
+	}	
 }
 
 ?>

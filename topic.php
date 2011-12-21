@@ -19,7 +19,7 @@ $db->select('topics.time, topics.author, topics.visits, topics.replies, topics.h
   ->from('topics')
   ->where('id = ?', $topic_id);
 /* No point joining the images table if images are disabled. */
-if(ALLOW_IMAGES && ! $_SESSION['settings']['text_mode']) {
+if(ALLOW_IMAGES) {
 	$db->select('images.file_name, images.original_name, images.md5')
 	   ->join('images', 'topics.id = images.topic_id');
 }
@@ -89,7 +89,7 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 		<img src="http://i.imgur.com/<?php echo htmlspecialchars($topic->imgur) ?>m.jpg" alt="" class="help" title="Externally hosted image" />
 	</a>
 <?php
-	elseif(is_ignored($topic->md5)):
+	elseif($topic->file_name && ($_SESSION['settings']['text_mode'] || is_ignored($topic->md5))):
 		$image_ignored = true;
 ?>
 	<div class="unimportant hidden_image">(<strong><a href="<?php echo DIR . 'img/' . htmlspecialchars($topic->file_name) ?>"><?php echo htmlspecialchars($topic->original_name) ?></a></strong> hidden.)</div>
@@ -107,7 +107,7 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 
 	<ul class="menu">
 <?php
-	if(isset($image_ignored)):
+	if(isset($image_ignored) && ! $_SESSION['settings']['text_mode']):
 		unset($image_ignored);
 ?>
 		<li><a href="<?php echo DIR ?>unhide_image/<?php echo $topic->md5 ?>" onclick="return quickAction(this, 'Really unhide all instances of this image?');">Unhide image</a></li>
@@ -281,7 +281,7 @@ $db->select('replies.id, replies.time, replies.author, replies.body, replies.del
    ->from('replies')
    ->where('replies.parent_id = ?', $topic_id)
    ->order_by('replies.time');
-if (ALLOW_IMAGES && ! $_SESSION['settings']['text_mode']) {
+if (ALLOW_IMAGES) {
 	$db->select('images.file_name, images.original_name, images.md5')
 	   ->join('images', 'replies.id = images.reply_id');
 }
@@ -323,6 +323,16 @@ while( $reply = $replies->fetchObject() ) {
 		'poster_number' => $posters[$reply->author]['number'],
 		'post_number'   => $reply_count + 1
 	);
+	
+	if($reply->author == $_SESSION['UID']) {
+		if($reply->namefag) {
+			$your_name = $reply->namefag;
+		} else if($reply->tripfag) {
+			$your_name = $reply->tripfag;
+		} else {
+			$your_name = number_to_letter($posters[$reply->author]['number']);
+		}
+	}
 	
 	/* Skip if deleted and we don't have permission to view */
 	if($reply->deleted) {
@@ -471,11 +481,11 @@ while( $reply = $replies->fetchObject() ) {
 		'<img src="http://i.imgur.com/' . htmlspecialchars($reply->imgur) . 'm.jpg" alt="" class="help" title="Externally hosted image" />',
 		'</a>';
 	}
-	else if(is_ignored($reply->md5)) {
+	else if($reply->file_name && ($_SESSION['settings']['text_mode'] || is_ignored($reply->md5))) {
 		$image_ignored = true;
 		echo '<div class="unimportant hidden_image">(<strong><a href="' . DIR . 'img/' . htmlspecialchars($reply->file_name) . '">' . htmlspecialchars($reply->original_name) . '</a></strong> hidden.)</div>';
 	}
-	else if ($reply->file_name) {
+	else if($reply->file_name) {
 		echo '<a href="'.DIR.'img/' . htmlspecialchars($reply->file_name) . '" class="thickbox"><img src="'.DIR.'thumbs/' . htmlspecialchars($reply->file_name) . '" alt=""';
 		if( ! empty($reply->original_name)) {
 			echo ' class="help" title="'.htmlspecialchars($reply->original_name).'"';
@@ -489,7 +499,7 @@ while( $reply = $replies->fetchObject() ) {
 	
 	echo '<ul class="menu">';
 	
-	if(isset($image_ignored)) {
+	if(isset($image_ignored) && ! $_SESSION['settings']['text_mode']) {
 		unset($image_ignored);
 		echo '<li><a href="'.DIR.'unhide_image/' . $reply->md5 . '" onclick="return quickAction(this, \'Really unhide all instances of this image?\');">Unhide image</a></li>';
 	} else if($_SESSION['settings']['ostrich_mode'] && $reply->file_name) {
@@ -580,8 +590,14 @@ if( (! $topic->locked || $perm->get('lock')) && ! $topic->deleted) {
 		<input name="start_time" type="hidden" value="<?php echo time(); ?>" />
 		<input name="image" type="hidden" value="" />
 		<div class="row"><label for="name">Name</label>:
-			<input id="name" name="name" type="text" size="30" maxlength="30" tabindex="2" value="<?php echo htmlspecialchars($_SESSION['poster_name']); ?>" class="inline"> <?php if($_SESSION['UID'] == $topic->author) echo ' (OP)' ?>
-<?php
+			<input id="name" name="name" type="text" size="30" maxlength="30" tabindex="2" value="<?php echo htmlspecialchars($_SESSION['poster_name']); ?>" class="inline"> 
+<?php 
+if($_SESSION['UID'] == $topic->author) { 
+	echo ' (OP)';
+} else if(isset($your_name)) {
+	echo ' ('.htmlspecialchars(trim($your_name)).')';
+}
+
 if($perm->get('link')):
 ?>
 			<input type="checkbox" name="post_as_group" id="post_as_group" value="1" class="inline" <?php if(isset($_SESSION['show_group'])) echo ' checked="checked"' ?> />

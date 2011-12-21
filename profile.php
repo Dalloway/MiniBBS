@@ -3,7 +3,7 @@ require './includes/bootstrap.php';
 force_id();
 
 if( ! $perm->get('view_profile')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if( ! isset($_GET['uid'])) {
@@ -57,12 +57,26 @@ if( ! $uid) {
 	error::fatal('There is no such user.');
 }
 
-$id_hostname = @gethostbyaddr($uid->ip_address);
-if($id_hostname === $uid->ip_address) {
-	$id_hostname = false;
+/* Fetch post count. */
+$res = $db->q('SELECT count(*) FROM topics WHERE author = ? AND deleted = 0', $_GET['uid']);
+$topic_count = $res->fetchColumn();
+$res = $db->q('SELECT count(*) FROM replies WHERE author = ? AND deleted = 0', $_GET['uid']);
+$reply_count = $res->fetchColumn();
+$post_count = $topic_count + $reply_count;
+
+/* Do we have permission to view this user's IP? */
+if($uid->ip_address && $perm->get('view_ip') && ($perm->get('view_ip_max') > $post_count || $perm->get('view_ip_max') == 0 || $uid->first_seen > $_SERVER['REQUEST_TIME'] - 86400)) {
+	$view_ip = true;
+	
+	$id_hostname = @gethostbyaddr($uid->ip_address);
+	if($id_hostname === $uid->ip_address) {
+		$id_hostname = false;
+	}
+} else {
+	$view_ip = false;
 }
 
-// Check for ban.
+/* Check for ban. */
 $banned = false;
 if($perm->is_banned($_GET['uid'])) {
 	list($ban_reason, $ban_expiry, $ban_filed) = $perm->get_ban_log($_GET['uid']);
@@ -71,24 +85,20 @@ if($perm->is_banned($_GET['uid'])) {
 	}
 }
 
-// Fetch number of topics and replies.
-$res = $db->q('SELECT count(*) FROM topics WHERE author = ? AND deleted = 0', $_GET['uid']);
-$id_num_topics = $res->fetchColumn();
-$res = $db->q('SELECT count(*) FROM replies WHERE author = ? AND deleted = 0', $_GET['uid']);
-$id_num_replies = $res->fetchColumn();
-
-// Now print everything.
 $template->title = 'Profile of poster ' . $_GET['uid'];
 
-echo '<p>First seen <strong class="help" title="' . format_date($uid->first_seen) . '">' . age($uid->first_seen) . ' ago</strong> using the IP address <strong><a href="'.DIR.'IP_address/' . $uid->ip_address . '">' . $uid->ip_address . '</a></strong> (';
+echo '<p>First seen <strong class="help" title="' . format_date($uid->first_seen) . '">' . age($uid->first_seen) . ' ago</strong>';
 
-// If there's a valid host name.
-if($id_hostname) {
-	echo '<strong>' . $id_hostname . '</strong>';
-} else {
-	echo 'no valid host name';
+if($view_ip) {
+	echo ' using the IP address <strong><a href="'.DIR.'IP_address/' . $uid->ip_address . '">' . $uid->ip_address . '</a></strong> ';
+	if($id_hostname) {
+		echo '(<strong>' . $id_hostname . '</strong>)';
+	} else {
+		echo '(no valid host name)';
+	}
 }
-echo ') and last seen <strong class="help" title="' . format_date($uid->last_seen) . '">' . age($uid->last_seen) . ' ago</strong>, has started <strong>' . number_format($id_num_topics) . '</strong> existing topic' . ($id_num_topics == 1 ? '' : 's') . ' and posted <strong>' . number_format($id_num_replies) . '</strong> existing repl' . ($id_num_replies == 1 ? 'y' : 'ies') . '.</p>';
+ 
+echo ' and last seen <strong class="help" title="' . format_date($uid->last_seen) . '">' . age($uid->last_seen) . ' ago</strong>, has started <strong>' . number_format($topic_count) . '</strong> existing topic' . ($topic_count == 1 ? '' : 's') . ' and posted <strong>' . number_format($reply_count) . '</strong> existing repl' . ($reply_count == 1 ? 'y' : 'ies') . '.</p>';
 
 if ($banned) {
 	echo '<p>This poster is currently <strong>banned</strong>. The ban was filed <span class="help" title="' . format_date($ban_filed) . '">' . age($ban_filed) . ' ago</span> and will ';
@@ -108,8 +118,10 @@ if ($banned) {
 		<input type="text" name="length" id="ban_length" value="<?php if( ! $banned) echo '1 day' ?>" class="inline help" tabindex="1" title="A ban length of 'indefinite' or '0' will never expire." onclick="this.value = ''" />
 		<label for="ban_reason" class="inline">Reason</label>
 		<input type="text" name="reason" id="ban_reason" value="<?php echo htmlspecialchars($ban_reason) ?>" class="inline help" tabindex="2" title="Optional." />
-		<label for="autoban_ip" class="inline">Ban last IP</label>
-		<input type="checkbox" name="autoban_ip" id="autoban_ip" value="1" class="inline" checked="checked" />
+		<?php if($view_ip): ?>
+			<label for="autoban_ip" class="inline">Ban last IP</label>
+			<input type="checkbox" name="autoban_ip" id="autoban_ip" value="1" class="inline" checked="checked" />
+		<?php endif; ?>
 		<input type="submit" value="<?php echo ($banned) ? 'Update ban length' : 'Ban' ?>" class="inline" />
 	</div>
 </form>
@@ -135,7 +147,7 @@ if ($page->current > 1) {
 }
 
 $master_checkbox = '<input type="checkbox" name="master_checkbox" class="inline" onclick="checkAll(\'mass_delete\')" title="Check/uncheck all" />';
-if($id_num_topics > 0) {
+if($topic_count > 0) {
 	echo '<h4 class="section">Topics</h4>';
 
 	$res = $db->q
@@ -156,6 +168,9 @@ if($id_num_topics > 0) {
 		'Visits',
 		'Age ▼'
 	);
+	if( ! $view_ip) {
+		unset($columns[2]);
+	}
 	$topics = new Table($columns, 0);
 	$topics->add_td_class(0, 'topic_headline');
 	
@@ -164,20 +179,24 @@ if($id_num_topics > 0) {
 		$values = array 
 		(
 			'<input type="checkbox" name="topics[]" value="'.$topic->id.'" class="inline" onclick="highlightRow(this)" />' . format_headline(htmlspecialchars($topic->headline), $topic->id, $topic->replies, $topic->poll, $topic->locked, $topic->sticky),
-			($topic->namefag || $topic->tripfag) ? '<strong>' .htmlspecialchars($topic->namefag). '</strong> ' . $topic->tripfag : 'Anonymous',
+			format_name($topic->namefag, $topic->tripfag, null, null, true),
 			'<a href="'.DIR.'IP_address/' . $topic->author_ip . '">' . $topic->author_ip . '</a>',
 			replies($topic->id, $topic->replies),
 			format_number($topic->visits),
 			'<span class="help" title="' . format_date($topic->time) . '">' . age($topic->time) . '</span>'
 		);
-								
+		
+		if( ! $view_ip) {
+			unset($values[2]);
+		}
+		
 		$topics->row($values);
 	}
 	$num_topics_fetched = $topics->row_count;
 	$topics->output();
 }
 
-if($id_num_replies > 0) {
+if($reply_count > 0) {
 	echo '<h4 class="section">Replies</h4>';
 
 	$res = $db->q
@@ -191,7 +210,7 @@ if($id_num_replies > 0) {
 		LIMIT '.$page->offset.', '.$page->limit, $_GET['uid']
 	);
 	
-	if($id_num_topics) {
+	if($topic_count) {
 		$master_checkbox = '';
 	}
 	
@@ -203,6 +222,9 @@ if($id_num_replies > 0) {
 		'IP address',
 		'Age ▼'
 	);
+	if( ! $view_ip) {
+		unset($columns[3]);
+	}
 	$replies = new Table($columns, 1);
 	$replies->add_td_class(1, 'topic_headline');
 	$replies->add_td_class(0, 'reply_body_snippet');
@@ -213,11 +235,15 @@ if($id_num_replies > 0) {
 		(
 			'<input type="checkbox" name="replies[]" value="'.$reply->id.'" class="inline" onclick="highlightRow(this)" /><a href="'.DIR.'topic/' . $reply->parent_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $reply->id . '">' . parser::snippet($reply->body) . '</a>',
 			'<a href="'.DIR.'topic/' . $reply->parent_id . '">' . htmlspecialchars($reply->headline) . '</a> <span class="help unimportant" title="' . format_date($topic_time) . '">(' . age($reply->topic_time) . ' old)</span>',
-			($reply->namefag || $reply->tripfag) ? '<strong>' .htmlspecialchars($reply->namefag). '</strong> ' . $reply->tripfag : 'Anonymous',
+			format_name($reply->namefag, $reply->tripfag, null, null, true),
 			'<a href="'.DIR.'IP_address/' . $reply->author_ip . '">' . $reply->author_ip . '</a>',
 			'<span class="help" title="' . format_date($reply->time) . '">' . age($reply->time) . '</span>'
 		);
-									
+		
+		if( ! $view_ip) {
+			unset($values[3]);
+		}
+		
 		$replies->row($values);
 	}
 	$num_replies_fetched = $replies->row_count;

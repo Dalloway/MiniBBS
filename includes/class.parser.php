@@ -98,14 +98,16 @@ class parser {
 				}
 			}
 		}
-
+				
+		/* Parse PHP tags */
 		if(strpos($text, '[php]') !== false) {
 			$text = preg_replace_callback('|\[php\](.+?)\[/php\]|ms', array('self', 'highlight_php'), $text);
 		}
-
+		
+		/* Add [play] links for streaming videos */
 		if (EMBED_VIDEOS) {
 			if (strpos($text, 'youtube.com') !== false) {
-				$text = preg_replace ( "/(<a href=\"https?:\/\/(www\.)?youtube\.com\/watch\?([&;a-zA-Z0-9=]+)?v=([^',\.& \t\r\n\v\f]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('youtube','\\4', this, '$record_class', '$record_ID');\" class=\"video youtube\">play</a>]", $text);
+				$text = preg_replace ( "/(<a href=\"https?:\/\/(www\.)?youtube\.com\/watch\?([&;a-zA-Z0-9=_]+)?v=([^',\.& \t\r\n\v\f]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('youtube','\\4', this, '$record_class', '$record_ID');\" class=\"video youtube\">play</a>]", $text);
 			}
 			if (strpos($text, 'vimeo.com') !== false) {
 				$text = preg_replace("/(<a href=\"http:\/\/(www\.)?vimeo\.com\/([0-9]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('vimeo','\\3', this, '$record_class', '$record_ID');\" class=\"video vimeo\">play</a>]", $text);
@@ -113,6 +115,12 @@ class parser {
 		}
 		
 		$text = nl2br($text);
+		
+		/* Parse tables (must follow nl2br so we can remove linebreaks) */
+		if(strpos($text, "\n|") !== false) {
+			$text = self::table($text);
+		}
+		
 		/* If any <pre> tags are used, fix the double-spacing. */
 		if(strpos($text, '<pre') !== false) {
 			$text = preg_replace_callback('|\<pre(.+?)\</pre\>|s', array('self', 'fix_pre_tags'), $text);
@@ -138,6 +146,79 @@ class parser {
 		$text = substr_replace($text, '', strrpos($text, "\n"), 1);
 		
 		return '<div class="php">' . $text . '</div>';
+	}
+	
+	/**
+	 * Transforms table mark-up into HTML:
+	 * ||     header cell (<th>)
+	 * ||!    main header cell (all other columns will be shrunk with class="minimal")
+	 * |      normal cell
+	 */
+	private static function table($post) {
+		/* Will be populated by <th> cells (||). */
+		$columns = array();
+		/* Will be populated by <td> cells (|). */
+		$rows = array();
+		
+		/* Split post at the beginning of the table. */
+		$delim = "\n|";
+		if($post[0] === '|') {
+			/* The table starts the post; there is no \n */
+			$delim = '|';
+		}
+		list($before_table, $remainder) = explode($delim, $post, 2);
+		$after_table = '';
+		
+		/* Restore the table opener removed by explode. */
+		$remainder = '|' . $remainder;
+		
+		$table_lines = explode("\n", $remainder);
+		
+		foreach($table_lines as $row => $line) {
+				
+			if($line[0] !== '|') {
+				/* Our table ends here; save the post-table content for later. */
+				array_splice($table_lines, 0, $row);
+				$after_table = implode($table_lines);
+				break;
+			}
+			
+			if($row === 0 && $line[1] === '|') {
+				/* This is a header row; it begins with ||. */
+				$columns = explode('||', $line);
+				/* Remove the blank element from the beginning of the line */
+				array_shift($columns);
+				
+				foreach($columns as $key => $column) {
+					if($column[0] === '!') {
+						/* This is the main column; it begins with ||! */
+						$columns[$key] = ltrim($column, '!');
+						$main_column = $key;
+					}
+				}
+			} else {
+				/* This is a normal row; it begins with |. */
+				$cells = explode('|', $line);
+				array_shift($cells);
+				$rows[$row] = $cells;
+			}
+			
+		}
+		
+		/* Pass the arrays onto our table class. 700 is an arbitrary limit to prevent abuse. */
+		if( ! empty($rows) && count($rows) < 700) {
+			$table = new Table($columns, (isset($main_column) ? $main_column : null));
+			
+			foreach($rows as $row) {
+				$table->row($row);
+			}
+			
+			/* Strip linebreaks inserted by nl2br() */
+			$table = str_replace('<br />', '', $table->output('', true));
+			$post = $before_table . $table . $after_table;
+		}
+		
+		return $post;
 	}
 
 	/* Condenses text into a shorter string */

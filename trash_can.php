@@ -6,7 +6,7 @@ update_activity('trash_can', 1);
 
 if ($_POST['empty_trash']) {
 	if( ! check_token()) {
-		error::fatal(MESSAGE_TOKEN_ERROR);
+		error::fatal(m('Error: Invalid token'));
 	}
 	$db->q('DELETE FROM trash WHERE uid = ?', $_SESSION['UID']);
 	$_SESSION['notice'] = 'Trash emptied.';

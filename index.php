@@ -41,22 +41,22 @@ if(BULLETINS_ON_INDEX > 0 && ( ! isset($last_actions['last_bulletin']) || $last_
 
 	$columns = array
 	(
-		'Bulletin',
 		'Author',
+		'Bulletin',
 		'Age ▼'
 	);
 	if($perm->get('delete')) {
 		$columns[] = 'Delete';
 	}
 
-	$table = new Table($columns, 0);
+	$table = new Table($columns, 1);
 	
 	$res = $db->q('SELECT id, message, time, author, name, trip FROM bulletins WHERE time > ? ORDER BY id DESC LIMIT ' . (int) BULLETINS_ON_INDEX, $last_seen_bulletin);
 	while( $bulletin = $res->fetchObject() ) {		
 		$values = array
 		(
-			parser::parse($bulletin->message),
 			format_name($bulletin->name, $bulletin->trip, $perm->get('link', $bulletin->author)),
+			parser::parse($bulletin->message),
 			'<span class="help" title="'.format_date($bulletin->time).'">' . age($bulletin->time) . '</span>'
 		);
 		if($perm->get('delete')) {
@@ -125,19 +125,7 @@ while($topic = $res->fetchObject()) {
 	
 	/* Decide what to use for the last seen marker and the age/last bump column. */
 	$order_time = ($topics_mode) ? $topic->time : $topic->last_post;
-	
-	/* Format the topic author's name. */
-	if($topic->namefag) {
-		$author = '<strong>'.htmlspecialchars($topic->namefag).'</strong>';
-		if($topic->tripfag) {
-			$author = '<span class="help" title="'.$topic->tripfag.'">' . $author . '</span>';
-		}
-	} else if($topic->tripfag) {
-		$author = $topic->tripfag;
-	} else {
-		$author = 'Anonymous';
-	}
-	
+		
 	$headline = htmlspecialchars($topic->headline);
 	if(isset($topic->citation) && $topic->citation) {
 		$headline = '<em class="help" title="New reply to your reply inside!">' . $headline . '</em>';
@@ -153,7 +141,7 @@ while($topic = $res->fetchObject()) {
 	(
 		format_headline($headline, $topic->id, $topic->replies, $topic->poll, $topic->locked, $topic->sticky),
 		$snippet,
-		$author,
+		format_name($topic->namefag, $topic->tripfag, null, null, true),
 		replies($topic->id, $topic->replies),
 		format_number($topic->visits),
 		'<span class="help" title="' . format_date($order_time) . '">' . age($order_time) . '</span>'

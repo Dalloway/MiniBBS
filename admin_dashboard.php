@@ -1,11 +1,11 @@
 <?php
 require './includes/bootstrap.php';
-require './includes/default_config.php';
+require './config/default_config.php';
 force_id();
 $template->title = 'Administrative dashboard';
 
 if( ! $perm->get('admin_dashboard')) {
-	error::fatal(MESSAGE_ACCESS_DENIED);
+	error::fatal(m('Error: Access denied'));
 }
 
 if(isset($_POST['form_sent'])) {
@@ -46,7 +46,6 @@ if(isset($_POST['form_sent'])) {
 	<li><a href="#dash_general">General</a></li>
 	<li><a href="#dash_media">Media</a></li>
 	<li><a href="#dash_captcha">Bot detection</a></li>
-	<li><a href="#dash_messages">Messages</a></li>
 	<li><a href="#dash_permissions">Permissions</a></li>
 	<li><a href="#dash_posts">Posts</a></li>
 	<li><a href="#dash_pms">PMs</a></li>
@@ -215,45 +214,6 @@ if(isset($_POST['form_sent'])) {
 		<label class="common" for="RECAPTCHA_MAX_SEARCHES_PER_MIN">Max searches per minute</label>
 		<input type="text" id="RECAPTCHA_MAX_SEARCHES_PER_MIN" name="form[RECAPTCHA_MAX_SEARCHES_PER_MIN]" class="inline" value="<?php echo htmlspecialchars(RECAPTCHA_MAX_SEARCHES_PER_MIN) ?>" size="5" maxlength="9" />
 		<p class="caption">The maximum number of searches per minute that can be performed by a single IP address.</p>
-	</div>
-	
-<h4 class="section" id="dash_messages">Messages</h4>
-	<div>
-		<label class="common" for="RECAPTCHA_NOTICE">reCAPTCHA notice</label>
-		<textarea id="RECAPTCHA_NOTICE" name="form[RECAPTCHA_NOTICE]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(RECAPTCHA_NOTICE) ?></textarea>
-
-		<p class="caption">This message will be displayed before any CAPTCHA.</p>
-	</div>
-	
-	<div>
-		<label class="common" for="MESSAGE_ACCESS_DENIED">Access denied message</label>
-		<textarea id="MESSAGE_ACCESS_DENIED" name="form[MESSAGE_ACCESS_DENIED]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(MESSAGE_ACCESS_DENIED) ?></textarea>
-
-		<p class="caption">This will be displayed when a user does not have sufficient privileges to access a page.</p>
-	</div>
-	
-	<div>
-		<label class="common" for="MESSAGE_TOKEN_ERROR">Token error message</label>
-
-		<textarea id="MESSAGE_TOKEN_ERROR" name="form[MESSAGE_TOKEN_ERROR]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(MESSAGE_TOKEN_ERROR) ?></textarea>
-		<p class="caption">This will be displayed when a submitted form has an invalid token (usually due to an expired session or CSRF attack).</p>
-	</div>
-	
-	<div>
-		<label class="common" for="DEFCON_2_MESSAGE">DEFCON 2 message</label>
-		<textarea id="DEFCON_2_MESSAGE" name="form[DEFCON_2_MESSAGE]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(DEFCON_2_MESSAGE) ?></textarea>
-	</div>
-
-	
-	<div>
-		<label class="common" for="DEFCON_3_MESSAGE">DEFCON 3 message</label>
-		<textarea id="DEFCON_3_MESSAGE" name="form[DEFCON_3_MESSAGE]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(DEFCON_3_MESSAGE) ?></textarea>
-	</div>
-	
-	<div>
-		<label class="common" for="DEFCON_4_MESSAGE">DEFCON 4 message</label>
-		<textarea id="DEFCON_4_MESSAGE" name="form[DEFCON_4_MESSAGE]" class="inline" rows="2" style="width:40%;"><?php echo htmlspecialchars(DEFCON_4_MESSAGE) ?></textarea>
-		<p class="caption">These messages will be displayed whenever accessed is denied due to the respective <a href="<?php echo DIR ?>defcon">DEFCON</a> state.</p>
 	</div>
 	
 <h4 class="section" id="dash_permissions">Permissions</h4>

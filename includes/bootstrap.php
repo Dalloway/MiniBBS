@@ -2,21 +2,25 @@
 $script_start = microtime(true);
 define('SITE_ROOT', realpath(dirname(__FILE__) . '/..'));
 
-if( ! file_exists(SITE_ROOT . '/includes/config.php')) {
+if( ! file_exists(SITE_ROOT . '/config/config.php')) {
 	exit('MiniBBS is not (properly) installed.');
 }
 
 /* Globally required files */
-require SITE_ROOT . '/includes/config.php';
+require SITE_ROOT . '/config/config.php';
 require SITE_ROOT . '/includes/functions.php';
 
 /* Lazy load classes */
 spl_autoload_register('load_class');
 
+/* Error handling */
+set_error_handler(array('error', 'error_handler'));
+set_exception_handler(array('error', 'exception_handler'));
+
 /* Globally required classes. Do not re-order. */
-$template = new Template();
-$timer    = new Timer($script_start);
+$template = new Template($script_start);
 $db       = new Database($db_info['username'], $db_info['password'], $db_info['server'], $db_info['database']);
+$lang     = new Language();
 $perm     = new Permission();
 
 /* Define configuration values */
@@ -32,7 +36,7 @@ foreach($config as $name => $value) {
 unset($config);
 
 /* If the calling file defines MINIMAL_BOOTSTRAP as true, we'll skip a few checks. */
-defined(MINIMAL_BOOTSTRAP) or define('MINIMAL_BOOTSTRAP', false);
+defined('MINIMAL_BOOTSTRAP') or define('MINIMAL_BOOTSTRAP', false);
 
 /* Initialize the environment */
 if( ! MINIMAL_BOOTSTRAP) {
@@ -41,8 +45,6 @@ if( ! MINIMAL_BOOTSTRAP) {
 	header('Content-Type: text/html; charset=UTF-8');
 	session_cache_limiter('nocache');
 }
-set_error_handler(array('error', 'handler'));
-error_reporting(E_ALL & ~E_NOTICE);
 session_name('SID');
 session_start();
 
@@ -88,7 +90,7 @@ if( ! isset($_SESSION['settings'])) {
 $perm->set_group();
 
 if(DEFCON < 2 && ! $perm->is_admin()) {
-	exit('<p>The board is currently in lockdown mode. Come back soon.</p>');
+	exit(m('Lockdown mode'));
 }
 
 /* None of the following block is necessary for new visitors. */
@@ -105,9 +107,9 @@ if($_SESSION['ID_activated'] && ! MINIMAL_BOOTSTRAP) {
 	$res = $db->q('SELECT COUNT(*), parent_id, pm_id FROM pm_notifications WHERE uid = ? ORDER BY pm_id ASC', $_SESSION['UID']);
 	list($notifications['pms'], $new_parent, $new_pm) = $res->fetch();
 	if($notifications['pms'] > 0) {
-		$_SESSION['notice'] = 'You have <a href="'.DIR.'private_message/'.$new_parent. ($new_pm != $new_parent ? '#reply_'.$new_pm : '') .'"><strong>'.number_format($notifications['pms']).'</strong> unread</a> private message'.($notifications['pms'] > 1 ? 's' : '').'.';
-		if($notifications['pms'] > 5) {
-			$_SESSION['notice'] .= ' Too many? <a href="'.DIR.'dismiss_all_PMs" onclick="return quickAction(this, \'Really dismiss all current PMs?\')">Mark all as read</a>.';
+		$_SESSION['notice'] = m('Notice: New PM', $new_parent. ($new_pm != $new_parent ? '#reply_'.$new_pm : ''), number_format($notifications['pms']));
+		if($notifications['pms'] > 2) {
+			$_SESSION['notice'] .= m('Notice: New PM clear');
 		}
 	}
 	
@@ -139,7 +141,7 @@ if( ! ALLOW_BAN_READING && ! defined('REPRIEVE_BAN')) {
 }
 
 /* We use this to help cache custom stylesheets. */
-if( ! isset($_SESSION['style_last_modified'])) {
+if($_SESSION['settings']['custom_style'] && ! isset($_SESSION['style_last_modified'])) {
 	$_SESSION['style_last_modified'] = $_SERVER['REQUEST_TIME'];
 }
 

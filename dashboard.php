@@ -2,7 +2,7 @@
 
 /**
  * Steps to adding a dashboard option:
- * 1. Add your new option to the array in /includes/default_dashboard.php, following the instructions there.
+ * 1. Add your new option to the array in /config/default_dashboard.php, following the instructions there.
  * 2. Add a column to the "user_settings" table for your new option.
  * 3. Add the HTML input below.
  * Your setting will now be available from $_SESSION['settings']['your_setting'] 
@@ -14,11 +14,18 @@ update_activity('dashboard');
 $template->title = 'Dashboard';
 
 $stylesheets = get_styles();
-$stylesheets[] = 'Custom only';
+$custom_styles = array();
+$res = $db->q('SELECT id, title, basis FROM user_styles WHERE uid = ?', $_SESSION['UID']);
+while($style = $res->fetchObject()) {
+	$custom_styles[$style->id] = array(
+		'title' => $style->title,
+		'basis' => $style->basis
+	);
+}
 
 if(isset($_POST['form_sent'])) {
 	/* default_dashboard.php contains $default_dashboard -- an array of info on dashboard options */
-	require SITE_ROOT . '/includes/default_dashboard.php';
+	require SITE_ROOT . '/config/default_dashboard.php';
 
 	check_token();
 	
@@ -30,7 +37,18 @@ if(isset($_POST['form_sent'])) {
 	}
 	
 	/* First, make specific validations and transformations. */
-	if( ! in_array($new_settings['style'], $stylesheets)) {
+	if(preg_match('!custom:([0-9]+)!', $new_settings['style'], $match)) {
+		if( ! isset($custom_styles[$match[1]])) {
+			error::add('Invalid custom style ID.');
+		} else {
+			$new_settings['custom_style'] = $match[1];
+			$new_settings['style'] = $custom_styles[$match[1]]['basis'];
+		}
+	} else {
+		$new_settings['custom_style'] = '0';
+	}
+	
+	if( ! empty($new_settings['style']) && ! in_array($new_settings['style'], $stylesheets)) {
 		error::add('There is no such stylesheet.');
 	}
 	
@@ -46,6 +64,11 @@ if(isset($_POST['form_sent'])) {
 		$new_settings['memorable_password'] = hash_password($new_settings['memorable_password']);
 	}
 	
+	if(empty($new_settings['custom_menu'])) {
+		/* Revert to the default */
+		$new_settings['custom_menu'] = DEFAULT_MENU;
+	}
+	/* Clean up menu formatting*/
 	$new_settings['custom_menu'] = str_replace(array('  ', ']{'), array(' ', '] {'), $new_settings['custom_menu']);
 	
 	
@@ -137,21 +160,18 @@ error::output();
 		<label class="common" for="style" class="inline">Stylesheet</label>
 		<select id="style" name="form[style]" class="inline">
         <?php
-		foreach($stylesheets as $style){
-			echo '<option value="'.htmlspecialchars($style).'"' . ($_SESSION['settings']['style'] == $style ? ' selected' : '') . '>' .htmlspecialchars($style) . (DEFAULT_STYLESHEET == $style ? ' (default)' : '') . '</option>';
+		$master_style = ($_SESSION['settings']['custom_style'] ? $_SESSION['settings']['custom_style'] : $_SESSION['settings']['style']);
+		foreach($stylesheets as $style) {
+			echo '<option value="'.htmlspecialchars($style).'"' . ($master_style == $style ? ' selected' : '') . '>' .htmlspecialchars($style) . (DEFAULT_STYLESHEET == $style ? ' (default)' : '') . '</option>';
+		}
+		foreach($custom_styles as $id => $style) {
+			echo '<option value="custom:' . (int) $id . '"' . ($master_style == $id ? ' selected' : '') . '>' . htmlspecialchars($style['title']) . ' (custom)</option>';
 		}
 		?>
 		</select>
-		<p class="caption">Alter the board's appearance. If "custom only" is selected, <em>only</em> your custom CSS (set below) will be used. The Gmail themes have distinctively colored poster names.</p>
+		<p class="caption">Alter the board's appearance. You can add custom styles to this dropdown from the <a href="<?php echo DIR ?>theme_gallery">theme gallery</a>. The Gmail themes have distinctively colored poster names.</p>
 	</div>
-	
-	<div class="row">
-		<label class="common" for="custom_style">Custom style</label>
-		<input type="checkbox" id="custom_style" name="form[custom_style]" value="1" class="inline"<?php if($_SESSION['settings']['custom_style']) echo ' checked="checked"' ?> />
 		
-		<p class="caption">When enabled, the CSS in your <a href="<?php echo DIR ?>edit_style">custom style</a> will be cascaded atop your selected stylesheet.</p>
-	</div>
-	
 	<div class="row">
 		<label class="common" for="topics_mode" class="inline">Sort topics by:</label>
 		<select id="topics_mode" name="form[topics_mode]" class="inline">
