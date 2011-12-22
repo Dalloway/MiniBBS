@@ -3,7 +3,6 @@
  * This file is included from class.template.php's load() function.
  * $this references variables and functions within that class.
  */
-$this->gzhandler();
 ?>
 <!DOCTYPE html>
 <html lang="en">

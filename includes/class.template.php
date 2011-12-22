@@ -67,6 +67,11 @@ class Template {
 			$template = 'ajax';
 		}
 		
+		/* Compress the page if enabled. */
+		if(defined('MOD_ZIP') && MOD_GZIP) {
+			ob_start('ob_gzhandler');
+		}
+		
 		if($template === false) {
 			echo $this->content;
 		} else {
@@ -74,13 +79,6 @@ class Template {
 		}
 		
 		exit();
-	}
-	
-	/* Compress the page if both parties agree. */
-	public function gzhandler() {
-		if (MOD_GZIP && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
-			ob_start('ob_gzhandler');
-		}
 	}
 	
 	/* Should we use the default stylesheet or the user's setting? */
