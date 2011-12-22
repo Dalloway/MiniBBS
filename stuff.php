@@ -21,6 +21,25 @@ if(cache::fetch('maintenance') < $_SERVER['REQUEST_TIME'] - 172800) {
 </ul>
 
 <ul class="stuff">
+	<li><a href="<?php echo DIR; ?>mod_log">Mod logs</a></li>
+	<li><a href="<?php echo DIR; ?>statistics">Statistics</a></li>
+	<li><a href="<?php echo DIR; ?>failed_postings">Failed postings</a></li>
+	<li><a href="<?php echo DIR; ?>date_and_time">Date and time</a></li>
+	<li><a href="<?php echo DIR; ?>notepad">Notepad</a> — <span class="unimportant">Your personal notepad.</span></li>
+</ul>
+
+</div>
+
+<div class="width:50%; float:right">
+<ul class="stuff">
+	<li><strong><a href="<?php echo DIR; ?>restore_ID">Restore ID</a></strong> — <span class="unimportant">Log in.</span></li>
+	<li><a href="<?php echo DIR; ?>back_up_ID">Back up ID</a></li>
+	<li><a href="<?php echo DIR; ?>recover_ID_by_email">Recover ID by e-mail</a></li>
+	<li><a href="<?php echo DIR; ?>drop_ID">Drop ID</a> — <span class="unimportant">Log out.</span></li>
+	<li><a href="<?php echo DIR; ?>trash_can">Trash can</a> — <span class="unimportant">Your deleted posts.</span></li>
+</ul>
+
+<ul class="stuff">
 <?php
 	$user_menu = $template->get_user_menu();
 	foreach($template->menu_options as $text => $link):
@@ -32,23 +51,8 @@ if(cache::fetch('maintenance') < $_SERVER['REQUEST_TIME'] - 172800) {
 	endforeach;
 ?>
 </ul>
-</div>
 
-<div class="width:50%; float:right">
-<ul class="stuff">
-	<li><strong><a href="<?php echo DIR; ?>restore_ID">Restore ID</a></strong> — <span class="unimportant">Log in.</span></li>
-	<li><a href="<?php echo DIR; ?>back_up_ID">Back up ID</a></li>
-	<li><a href="<?php echo DIR; ?>recover_ID_by_email">Recover ID by e-mail</a></li>
-	<li><a href="<?php echo DIR; ?>drop_ID">Drop ID</a> — <span class="unimportant">Log out.</span></li>
-	<li><a href="<?php echo DIR; ?>trash_can">Trash can</a> — <span class="unimportant">Your deleted posts.</span></li>
-</ul>
-<ul class="stuff">
-	<li><a href="<?php echo DIR; ?>mod_log">Mod logs</a></li>
-	<li><a href="<?php echo DIR; ?>statistics">Statistics</a></li>
-	<li><a href="<?php echo DIR; ?>failed_postings">Failed postings</a></li>
-	<li><a href="<?php echo DIR; ?>date_and_time">Date and time</a></li>
-	<li><a href="<?php echo DIR; ?>notepad">Notepad</a> — <span class="unimportant">Your personal notepad.</span></li>
-</ul>
+
 </div>
 
 

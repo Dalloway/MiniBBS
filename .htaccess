@@ -46,7 +46,6 @@ RewriteRule ^trivia_for_topic/([0-9]+)$ topic_trivia.php?id=$1 [L]
 
 # Bulletins.
 RewriteRule ^bulletins/?([0-9]+)?$ bulletins.php?p=$1 [L]
-RewriteRule ^new_bulletin$ bulletins_new.php [L]
 RewriteRule ^delete_bulletin/([0-9]+)$ action.php?action=delete_bulletin&id=$1 [L]
 
 # Search.
