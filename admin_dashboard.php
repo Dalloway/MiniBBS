@@ -30,7 +30,7 @@ if(isset($_POST['form_sent'])) {
 				$_POST['form'][$name] = '1';
 			}
 			
-			if($_POST['form'][$name] != constant($name)) {
+			if( ! defined($name) || $_POST['form'][$name] != constant($name)) {
 				$db->q('UPDATE config SET `value` = ? WHERE `name` = ?', $_POST['form'][$name], $name);
 			}
 		}
@@ -310,7 +310,7 @@ if(isset($_POST['form_sent'])) {
 	</div>
 
 	<div>
-		<label class="common" for="ALLOW_USER_PM">Allow signatures</label>
+		<label class="common" for="SIGNATURES">Allow signatures</label>
 		<input type="checkbox" value="1" id="SIGNATURES" name="form[SIGNATURES]" class="inline"  <?php if(SIGNATURES) echo ' checked="checked"' ?> />
 		<p class="caption">Should users be able to sign their posts and PMs with a colored bar representing their UID by typing <kbd>~~~~</kbd>?</p>
 	</div>

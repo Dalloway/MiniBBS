@@ -205,6 +205,23 @@ form#poll {
 	vertical-align:middle;
 }
 
+.signature {
+	overflow: hidden; 
+	height: 1em; 
+	padding: 1px; 
+	vertical-align: middle; 
+	white-space: nowrap; 
+	border: 1px solid; 
+	display: inline-block;
+	width: 13em; 
+	margin: 0 .2em;
+}
+
+.signature_part {
+	float: left;
+	height: 1em;
+}
+
 h4.section {
 	font-size:15px;
 	margin-bottom:7px;

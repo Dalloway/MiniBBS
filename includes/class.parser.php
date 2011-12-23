@@ -101,9 +101,9 @@ class parser {
 				$percents[$key] = $percent * $weight;
 			}
 			
-			$signature = '<span class="signature help" style="overflow: hidden; height: 1em; padding: 1px; vertical-align: middle; white-space: nowrap; border: 1px solid; display: inline-block; width: 13em; margin: 0 .2em;" title="'.$hash.'">';
+			$signature = '<span class="signature help" title="'.$hash.'">';
 			foreach($colors as $key => $color) {
-				$signature .= '<span class="signature_part" style="float: left; height: 1em; width:'.$percents[$key].'%; background-color:#'.$color.';"></span>';
+				$signature .= '<span class="signature_part" style="width:'.$percents[$key].'%; background-color:#'.$color.';"></span>';
 			}
 			$signature .= '</span>';
 			
