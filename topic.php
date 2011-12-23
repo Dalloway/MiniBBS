@@ -101,7 +101,7 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 	</a>
 <?php
 	endif;
-	echo parser::parse($topic->body);
+	echo parser::parse($topic->body, $topic->author);
 	edited_message($topic->time, $topic->edit_time, $topic->edit_mod);
 ?>
 
@@ -385,7 +385,7 @@ while( $reply = $replies->fetchObject() ) {
 	}
 	
 	/* Prepare the body */
-	$parsed_body = parser::parse($reply->body);
+	$parsed_body = parser::parse($reply->body, $reply->author);
 	
 	/* Linkify citations */
 	$parsed_body = str_ireplace('@OP', '<span class="unimportant poster_number_0"><a href="#OP">@OP</a></span>', $parsed_body);
@@ -589,15 +589,19 @@ if( (! $topic->locked || $perm->get('lock')) && ! $topic->deleted) {
 		<input name="e-mail" type="hidden" />
 		<input name="start_time" type="hidden" value="<?php echo time(); ?>" />
 		<input name="image" type="hidden" value="" />
+<?php 
+if( ! FORCED_ANON || $perm->get('link')): 
+?>
 		<div class="row"><label for="name">Name</label>:
 			<input id="name" name="name" type="text" size="30" maxlength="30" tabindex="2" value="<?php echo htmlspecialchars($_SESSION['poster_name']); ?>" class="inline"> 
 <?php 
-if($_SESSION['UID'] == $topic->author) { 
-	echo ' (OP)';
-} else if(isset($your_name)) {
-	echo ' ('.htmlspecialchars(trim($your_name)).')';
-}
-
+	if($_SESSION['UID'] == $topic->author) { 
+		echo ' (OP)';
+	} else if(isset($your_name)) {
+		echo ' ('.htmlspecialchars(trim($your_name)).')';
+	}
+endif;
+	
 if($perm->get('link')):
 ?>
 			<input type="checkbox" name="post_as_group" id="post_as_group" value="1" class="inline" <?php if(isset($_SESSION['show_group'])) echo ' checked="checked"' ?> />

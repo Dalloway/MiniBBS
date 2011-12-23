@@ -57,7 +57,9 @@ $config_defaults = array
 	'FLOOD_CONTROL_BULLETINS' => '600',
 	'BULLETINS_ON_INDEX' => '2',
 	'AUTOLOCK' => '0',
-	'IMGUR_KEY' => ''
+	'IMGUR_KEY' => '',
+	'SIGNATURES' => '1',
+	'FORCED_ANON' => '0'
 );
 
 ?>

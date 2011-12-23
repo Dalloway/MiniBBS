@@ -211,7 +211,7 @@ endif;
 	if($_POST['preview'] && !empty($_POST['contents'])): 
 ?>
 		<h3 id="preview">Preview</h3>
-		<div class="body standalone"><?php echo parser::parse($_POST['contents']) ?></div>
+		<div class="body standalone"><?php echo parser::parse($_POST['contents'], $_SESSION['UID']) ?></div>
 <?php 
 	endif; 
 ?>

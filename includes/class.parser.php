@@ -61,7 +61,7 @@ class parser {
 	);
 
 	/* Converts user input to HTML */
-	public static function parse($text) {
+	public static function parse($text, $uid = null) {
 		$text = htmlspecialchars($text);
 		$text = str_replace("\r", '', $text);
 		
@@ -85,6 +85,30 @@ class parser {
 		
 		/* Replace mark-up with HTML */
 		$text = preg_replace(self::$markup, self::$replacements, $text);
+		
+		/* Parse user signatures (~~~~) */
+		if(SIGNATURES && isset($uid) && strpos($text, '~~~~') !== false) {
+			$hash = sha1($uid . TRIP_SEED);
+			
+			/* Get 4 sets of 6 hex characters for colors */
+			$colors = str_split(substr($hash, 0, 24), 6);
+			
+			/* Get 4 sets of 2 digits for lengths */
+			$percents = array_map('hexdec', str_split(substr($hash, 0, 8), 2));
+			/* Convert to percentage */
+			$weight = 100 / array_sum($percents);
+			foreach($percents as $key => $percent) {
+				$percents[$key] = $percent * $weight;
+			}
+			
+			$signature = '<span class="signature help" style="overflow: hidden; height: 1em; padding: 1px; vertical-align: middle; white-space: nowrap; border: 1px solid; display: inline-block; width: 13em; margin: 0 .2em;" title="'.$hash.'">';
+			foreach($colors as $key => $color) {
+				$signature .= '<span class="signature_part" style="float: left; height: 1em; width:'.$percents[$key].'%; background-color:#'.$color.';"></span>';
+			}
+			$signature .= '</span>';
+			
+			$text = str_replace('~~~~', $signature, $text);
+		}
 		
 		/* Restore [noparse] content */
 		if( ! empty($noparse_blocks)) {

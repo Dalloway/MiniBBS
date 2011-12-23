@@ -309,6 +309,17 @@ if(isset($_POST['form_sent'])) {
 		<p class="caption">To prevent necrobumping, after how many seconds from the last reply should a topic autolock? (To disable autolock, use 0.)</p>
 	</div>
 
+	<div>
+		<label class="common" for="ALLOW_USER_PM">Allow signatures</label>
+		<input type="checkbox" value="1" id="SIGNATURES" name="form[SIGNATURES]" class="inline"  <?php if(SIGNATURES) echo ' checked="checked"' ?> />
+		<p class="caption">Should users be able to sign their posts and PMs with a colored bar representing their UID by typing <kbd>~~~~</kbd>?</p>
+	</div>
+	
+	<div>
+		<label class="common" for="FORCED_ANON">Forced anon</label>
+		<input type="checkbox" value="1" id="FORCED_ANON" name="form[FORCED_ANON]" class="inline"  <?php if(FORCED_ANON) echo ' checked="checked"' ?> />
+		<p class="caption">Should users be disallowed from posting with a name? (This doesn't affect posters who can link their name, such as mods.)</p>
+	</div>
 	
 <h4 class="section" id="dash_pms">Private messages</h4>
 	<div>

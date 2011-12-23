@@ -52,9 +52,7 @@ if(cache::fetch('maintenance') < $_SERVER['REQUEST_TIME'] - 172800) {
 ?>
 </ul>
 
-
 </div>
-
 
 <?php
 if ($perm->get('cms') || $perm->get('ban') || $perm->get('defcon')):

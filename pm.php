@@ -96,7 +96,7 @@ do {
 		<td class="minimal"><?php echo $author ?></td>
 		<td class="pm_body" id="reply_<?php echo $pm->id?>">
 <?php 
-			echo parser::parse($pm->contents);
+			echo parser::parse($pm->contents, $pm->source);
 			
 			/* If this message was sent via a "PM" link in a topic, provide context (first PM only). */
 			if( ! empty($pm->topic)) {
