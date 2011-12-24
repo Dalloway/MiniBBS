@@ -129,7 +129,11 @@ if (isset($_POST['form_sent'])) {
 	}
 
 	/* Parse for mass quote tag ([quote]). */
-	$body = preg_replace_callback('/\[quote\](.+?)\[\/quote\]/s', create_function('$matches', 'return preg_replace(\'/.*[^\s]$/m\', \'> $0\', $matches[1]);'), $body);
+	$body = preg_replace_callback
+	(
+		'/\[quote\](.+?)\[\/quote\]/s', 
+		create_function('$matches', 'return preg_replace(\'/.*[^\s]$/m\', \'> $0\', $matches[1]);'), $body
+	);
 	
 	$user_link = $perm->get('link');
 	if(isset($_POST['post_as_group'])) {
@@ -160,7 +164,7 @@ if (isset($_POST['form_sent'])) {
 		check_token();
 		
 		$min_body = MIN_LENGTH_BODY;
-		if(empty($_FILES['image']['name']) && empty($_POST['imgur'])) {
+		if( ! empty($_FILES['image']['name']) || ! empty($_POST['imgur'])) {
 			$min_body = 0;
 		}
 		
@@ -175,84 +179,16 @@ if (isset($_POST['form_sent'])) {
 			error::add('Your post has too many lines.');
 		}
 		
-		$uploading = false;
-		if (ALLOW_IMAGES && ! empty($_FILES['image']['name'])) {
-			$image_data = array();
-			
-			switch ($_FILES['image']['error']) {
-				case UPLOAD_ERR_OK:
-					$uploading = true;
-					break;
-				
-				case UPLOAD_ERR_PARTIAL:
-					error::add('The image was only partially uploaded.');
-					break;
-				
-				case UPLOAD_ERR_INI_SIZE:
-					error::add('The uploaded file exceeds the upload_max_filesize directive in php.ini.');
-					break;
-				
-				case UPLOAD_ERR_NO_FILE:
-					error::add('No file was uploaded.');
-					break;
-				
-				case UPLOAD_ERR_NO_TMP_DIR:
-					error::add('Missing a temporary directory.');
-					break;
-				
-				case UPLOAD_ERR_CANT_WRITE:
-					error::add('Failed to write image to disk.');
-					break;
-				
-				default:
-					error::add('Unable to upload image.');
+		if(ALLOW_IMAGES && $perm->get('post_image') && ! empty($_FILES['image']['name'])) {
+			try {
+				$image = new Upload($_FILES['image']);
+			} catch (Exception $e) {
+				error::add($e->getMessage());
 			}
-			
-			if ($uploading) {
-				$uploading   = false; // Until we make our next checks.
-				$valid_types = array
-				(
-					'jpg',
-					'gif',
-					'png'
-				);
+		}
 				
-				$valid_name         = preg_match('/(.+)\.([a-z0-9]+)$/i', $_FILES['image']['name'], $match);
-				$image_data['type'] = strtolower($match[2]);
-				$image_data['md5']  = md5_file($_FILES['image']['tmp_name']);
-				$image_data['name'] = $_SERVER['REQUEST_TIME'] . mt_rand(99, 999999);
-				$image_data['original_name'] = str_replace(array
-				(
-					'/',
-					'<',
-					'>',
-					'"',
-					"'",
-					'%'
-				), '', $_FILES['image']['name']);
-				$image_data['original_name'] = substr(trim($image_data['original_name']), 0, 70);
-				
-				if ($image_data['type'] == 'jpeg') {
-					$image_data['type'] = 'jpg';
-				}
-				
-				if ( ! $perm->get('post_image')) {
-					error::add('You do not have permission to upload images.');
-				} else if ($valid_name === 0) {
-					error::add('The image has an invalid file name.');
-				} else if ( ! in_array($image_data['type'], $valid_types)) {
-					error::add('Only <strong>GIF</strong>, <strong>JPEG</strong> and <strong>PNG</strong> files are allowed.');
-				} else if ($_FILES['image']['size'] > MAX_IMAGE_SIZE) {
-					error::add('Uploaded images can be no greater than ' . round(MAX_IMAGE_SIZE / 1048576, 2) . ' MB. ');
-				} else {
-					$uploading = true;
-					$image_data['name'] = $image_data['name'] . '.' . $image_data['type'];			
-				}
-			}
-		} 
-		
 		$imgur = '';
-		if( ! $uploading && ! empty($_POST['imgur'])) {
+		if( ! isset($image) && ! empty($_POST['imgur'])) {
 			$_POST['imgur'] = trim($_POST['imgur']);
 			if( ! preg_match('/imgur\.com\/([a-zA-Z0-9]{3,10})/', $_POST['imgur'], $matches)) {
 				error::add('That does not appear to be a valid imgur URL.');
@@ -454,38 +390,24 @@ if (isset($_POST['form_sent'])) {
 				if ($reply) {
 					$target_topic = $topic_id;
 					$redir_loc    = $topic_id . ($_SESSION['settings']['posts_per_page'] ? '/reply/' : '#reply_') . $edit_id;
-				} else { // If topic.
+				} else { # If topic.
 					$target_topic = $edit_id;
 					$redir_loc    = $edit_id;
 				}
 			}
 			
 			// Take care of the upload.
-			if ($uploading) {
-				// Check if this image is already on the server.
-				$duplicate_check = $db->q('SELECT file_name FROM images WHERE md5 = ?', $image_data['md5']);
-				$previous_image = $duplicate_check->fetchColumn();				
-				
-				// If the file has been uploaded before this, just link the old version.
-				if ($previous_image) {
-					$image_data['name'] = $previous_image;
-				} else { // Otherwise, keep the new image and make a thumbnail.
-					thumbnail($_FILES['image']['tmp_name'], $image_data['name'], $image_data['type']);
-					move_uploaded_file($_FILES['image']['tmp_name'], 'img/' . $image_data['name']);
-				}
+			if(isset($image) && $image->success) {
+				$post_type = ($reply ? 'reply' : 'topic');
 				
 				if($editing) {
-					delete_image($reply ? 'reply' : 'topic', $edit_id);
+					delete_image($post_type, $edit_id);
 					$image_target = $edit_id;
 				} else {
 					$image_target = $inserted_id;
 				}
-
-				if ($reply) {
-					$db->q('INSERT INTO images (file_name, original_name, md5, reply_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $image_target);
-				} else {
-					$db->q('INSERT INTO images (file_name, original_name, md5, topic_id) VALUES (?, ?, ?, ?)', $image_data['name'], $image_data['original_name'], $image_data['md5'], $image_target);
-				}
+				
+				$image->move($post_type, $image_target);
 			}
 			
 			/* Add topic to watchlist if desired. */

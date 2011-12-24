@@ -142,7 +142,7 @@ if(isset($_POST['form_sent'])) {
 		<label class="common" for="IMAGEMAGICK">Use ImageMagick</label>
 
 		<input type="checkbox" value="1" id="IMAGEMAGICK" name="form[IMAGEMAGICK]" class="inline" <?php if(IMAGEMAGICK) echo ' checked="checked"' ?> />
-		<p class="caption">Should we use ImageMagick to generate thumbnails? If not, we'll use GD. (ImageMagick is much better, but less likely to be available.)</p>
+		<p class="caption">Should we use ImageMagick to generate thumbnails? If not, we'll use GD. (ImageMagick is much better, but less likely to be available.) <?php if(ini_get('safe_mode')): ?><strong>You appear to have PHP safe mode enabled, which is not compatible with our usage of ImageMagick.</strong><?php endif; ?></p>
 	</div>
 
 	

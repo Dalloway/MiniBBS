@@ -560,64 +560,6 @@ function check_token() { // Prevent cross-site redirection forgeries, token chec
 	return true;
 }
 
-function thumbnail($source, $dest_name, $type) {
-	$type = strtolower($type);
-	switch($type) {
-		case 'jpg':
-			$image = imagecreatefromjpeg($source);
-		break;
-									
-		case 'gif':
-			$image = imagecreatefromgif($source);
-		break;
-									
-		case 'png':
-			$image = imagecreatefrompng($source);
-		break;
-	}
-	$width = imagesx($image);
-	$height = imagesy($image);
-	$max_dimensions = ($type == 'gif' ? MAX_GIF_DIMENSIONS : MAX_IMAGE_DIMENSIONS);
-	
-	if($width > $max_dimensions || $height > $max_dimensions) {
-		$percent = $max_dimensions / ( ($width > $height) ? $width : $height );
-										
-		$new_width = $width * $percent;
-		$new_height = $height * $percent;
-	} else {
-		copy($source, 'thumbs/' . $dest_name);
-		return true;
-	}
-
-	if(IMAGEMAGICK) {
-		/* ImageMagick -- just use the CLI, it's much faster than PHP's extension */
-		exec('convert ' . escapeshellarg($source) . ' -quality ' . ($type == 'gif' ? '75' : '90') . ' -resize ' . (int)$new_width. 'x' . (int)$new_height . ' ' . escapeshellarg(SITE_ROOT . '/thumbs/' . $dest_name) );
-		return true;
-	} else {
-		/* GD */
-		$thumbnail = imagecreatetruecolor($new_width, $new_height) ; 
-		imagecopyresampled($thumbnail, $image, 0, 0, 0, 0, $new_width, $new_height, $width, $height);
-		
-		switch($type) {
-			case 'jpg':
-				imagejpeg($thumbnail, 'thumbs/' . $dest_name, 70);
-			break;
-									
-			case 'gif':
-				imagegif($thumbnail, 'thumbs/' . $dest_name);
-			break;
-									
-			case 'png':
-				imagepng($thumbnail, 'thumbs/' . $dest_name);
-		}
-				
-		imagedestroy($thumbnail);
-		if(gettype($image) == 'resource') {
-			imagedestroy($image);
-		}
-	}
-}
-
 /* Soft delets a topic with logging and notification */
 function delete_topic($id, $notify = true) {
 	global $db, $perm;
