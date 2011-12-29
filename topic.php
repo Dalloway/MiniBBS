@@ -192,7 +192,7 @@ if( ! $_SESSION['settings']['posts_per_page'] || ! isset($_GET['page']) || $_GET
 	endif;
 	if( ! $topic->locked || $perm->get('lock')):
 ?>
-		<li><a href="<?php echo DIR ?>new_reply/<?php echo $topic_id ?>/quote_topic" onclick="quickQuote('OP', '<?php echo encode_quote($topic->body) ?>');return false;">Quote</a></li>
+		<li><a href="<?php echo DIR ?>new_reply/<?php echo $topic_id ?>/quote_topic" onclick="return quickReply('OP', '<?php echo encode_quote($topic->body) ?>');">Quote</a></li>
 <?php
 	endif;
 ?>
@@ -530,8 +530,8 @@ while( $reply = $replies->fetchObject() ) {
 		echo '<li><a href="'.DIR.'contact_poster/' . $reply->id . '">PM</a></li>';
 	}
 	if( ! $topic->locked || $perm->get('lock')) {
-		echo '<li><a href="'.DIR.'new_reply/' . $topic_id . '/quote_reply/' . $reply->id . '" onclick="quickQuote('. $reply->id . ', \'' . encode_quote($reply->body) . '\');return false;">Quote</a></li>',
-		'<li><a href="'.DIR.'new_reply/' . $topic_id . '/cite_reply/' . $reply->id . '" onclick="quickCite('.$reply->id.');return false;">Cite</a></li></ul>';
+		echo '<li><a href="'.DIR.'new_reply/' . $topic_id . '/quote_reply/' . $reply->id . '" onclick="return quickReply('. $reply->id . ', \'' . encode_quote($reply->body) . '\');">Quote</a></li>',
+		'<li><a href="'.DIR.'new_reply/' . $topic_id . '/cite_reply/' . $reply->id . '" onclick="return quickReply('.$reply->id.');">Cite</a></li></ul>';
 	}
 	
 	if($reply->deleted) {

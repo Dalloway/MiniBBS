@@ -23,7 +23,7 @@
 	if(MOBILE_MODE):
 ?>
 	<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;" />
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/mobile.css?2' ?>" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/mobile.css?3' ?>" />
 <?php 
 	elseif(FANCY_IMAGE):
 ?>
@@ -34,7 +34,7 @@
 	endif;
 ?>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?6"></script>
+	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?11"></script>
 <?php
 	echo $this->head
 ?>

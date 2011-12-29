@@ -54,25 +54,24 @@ function addCommas(nStr){
 	return x1 + x2;
 }
 
-function quickQuote(id, content){
+function quickReply(id, content) {
+	textarea = document.getElementById('qr_text');
+	
 	document.getElementById('quick_reply').style.display = 'block';
-	document.getElementById('qr_text').scrollIntoView(true);
-	document.getElementById('qr_text').focus();
-	document.getElementById('qr_text').value += '@' + addCommas(id) + '\r\n\r\n';
-	document.getElementById('qr_text').value += decodeURIComponent(content.replace(/\+/g, '%20')) + "\r\n\r\n" ;
-	document.getElementById('qr_text').scrollTop = document.getElementById('qr_text').scrollHeight;
-	document.getElementById('qr_text').sel
+	textarea.value += '@' + addCommas(id) + '\r\n';
+	
+	if(content !== undefined) {
+		textarea.value += decodeURIComponent(content.replace(/\+/g, '%20')) + "\r\n\r\n" ;
+	}
+	
+	textarea.scrollIntoView(true);
+	textarea.focus();
+	textarea.scrollTop = textarea.scrollHeight;
+	textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+	
 	return false;
 }
 
-function quickCite(id){
-	document.getElementById('quick_reply').style.display = 'block';
-	document.getElementById('qr_text').scrollIntoView(true);
-	document.getElementById('qr_text').focus();
-	document.getElementById('qr_text').value += '@' + addCommas(id) + '\r\n';
-	document.getElementById('qr_text').scrollTop = document.getElementById('qr_text').scrollHeight;
-	return false;
-}
 
 function checkAll(formId) {
 	form = document.getElementById(formId);
