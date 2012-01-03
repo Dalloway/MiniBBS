@@ -315,6 +315,11 @@ table {
 	margin-bottom:1em;
 	width:100%;
 }
+
+	.minimal_table {
+		width:1%;
+	}
+	
 	table th {
 		padding:.5em;
 		text-align:left;

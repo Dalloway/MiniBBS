@@ -110,6 +110,26 @@ class parser {
 			$text = str_replace('~~~~', $signature, $text);
 		}
 		
+		/* Parse PHP tags */
+		if(strpos($text, '[php]') !== false) {
+			$text = preg_replace_callback('|\[php\](.+?)\[/php\]|ms', array('self', 'highlight_php'), $text);
+		}
+		
+		/* Parse tables */
+		if(strpos($text, "\n|") !== false) {
+			$text = self::table($text);
+		}
+		
+		/* Add [play] links for streaming videos */
+		if (EMBED_VIDEOS) {
+			if (strpos($text, 'youtube.com') !== false) {
+				$text = preg_replace ( "/(<a href=\"https?:\/\/(www\.)?youtube\.com\/watch\?([&;a-zA-Z0-9=_]+)?v=([^',\.& \t\r\n\v\f]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('youtube','\\4', this, '$record_class', '$record_ID');\" class=\"video youtube\">play</a>]", $text);
+			}
+			if (strpos($text, 'vimeo.com') !== false) {
+				$text = preg_replace("/(<a href=\"http:\/\/(www\.)?vimeo\.com\/([0-9]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('vimeo','\\3', this, '$record_class', '$record_ID');\" class=\"video vimeo\">play</a>]", $text);
+			}
+		}
+
 		/* Restore [noparse] content */
 		if( ! empty($noparse_blocks)) {
 			$chunks = explode('[noparse][/noparse]', $text);
@@ -122,29 +142,9 @@ class parser {
 				}
 			}
 		}
-				
-		/* Parse PHP tags */
-		if(strpos($text, '[php]') !== false) {
-			$text = preg_replace_callback('|\[php\](.+?)\[/php\]|ms', array('self', 'highlight_php'), $text);
-		}
-		
-		/* Add [play] links for streaming videos */
-		if (EMBED_VIDEOS) {
-			if (strpos($text, 'youtube.com') !== false) {
-				$text = preg_replace ( "/(<a href=\"https?:\/\/(www\.)?youtube\.com\/watch\?([&;a-zA-Z0-9=_]+)?v=([^',\.& \t\r\n\v\f]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('youtube','\\4', this, '$record_class', '$record_ID');\" class=\"video youtube\">play</a>]", $text);
-			}
-			if (strpos($text, 'vimeo.com') !== false) {
-				$text = preg_replace("/(<a href=\"http:\/\/(www\.)?vimeo\.com\/([0-9]+)([^',\. \t\r\n\v\f]+)?\"([^<]*)*<\/a>)/", "\\1 [<a href=\"javascript:void(0);\" onclick=\"play_video('vimeo','\\3', this, '$record_class', '$record_ID');\" class=\"video vimeo\">play</a>]", $text);
-			}
-		}
 		
 		$text = nl2br($text);
-		
-		/* Parse tables (must follow nl2br so we can remove linebreaks) */
-		if(strpos($text, "\n|") !== false) {
-			$text = self::table($text);
-		}
-		
+				
 		/* If any <pre> tags are used, fix the double-spacing. */
 		if(strpos($text, '<pre') !== false) {
 			$text = preg_replace_callback('|\<pre(.+?)\</pre\>|s', array('self', 'fix_pre_tags'), $text);
@@ -175,12 +175,14 @@ class parser {
 	/**
 	 * Transforms table mark-up into HTML:
 	 * ||     header cell (<th>)
-	 * ||!    main header cell (all other columns will be shrunk with class="minimal")
+	 * ||!    main header cell (other columns will be shrunk with class="minimal")
 	 * |      normal cell
 	 */
-	private static function table($post) {
+	private static function table($post, $recurse_level = 0) {
 		/* Will be populated by <th> cells (||). */
 		$columns = array();
+		/* An array of ints identifying stretched columns (||!) */
+		$main_columns = array();
 		/* Will be populated by <td> cells (|). */
 		$rows = array();
 		
@@ -203,7 +205,7 @@ class parser {
 			if($line[0] !== '|') {
 				/* Our table ends here; save the post-table content for later. */
 				array_splice($table_lines, 0, $row);
-				$after_table = implode($table_lines);
+				$after_table = implode("\n", $table_lines);
 				break;
 			}
 			
@@ -217,7 +219,7 @@ class parser {
 					if($column[0] === '!') {
 						/* This is the main column; it begins with ||! */
 						$columns[$key] = ltrim($column, '!');
-						$main_column = $key;
+						$main_columns[] = $key;
 					}
 				}
 			} else {
@@ -231,15 +233,20 @@ class parser {
 		
 		/* Pass the arrays onto our table class. 700 is an arbitrary limit to prevent abuse. */
 		if( ! empty($rows) && count($rows) < 700) {
-			$table = new Table($columns, (isset($main_column) ? $main_column : null));
+			$table = new Table($columns, $main_columns, (empty($main_columns) ? 'minimal_table' : null));
 			
 			foreach($rows as $row) {
 				$table->row($row);
 			}
 			
-			/* Strip linebreaks inserted by nl2br() */
-			$table = str_replace('<br />', '', $table);
+			/* Remove linebreaks inserted by the table class so they won't be transformed into <br /> */
+			$table = str_replace(array("\r", "\n"), '', $table);
 			$post = $before_table . $table . $after_table;
+			
+			/* Parse any remaining tables -- up to 6, another arbitrary limit. */
+			if($recurse_level < 6 && strpos($post, "\n|") !== false) {
+				$post = self::table($post, ++$recurse_level);
+			}
 		}
 		
 		return $post;

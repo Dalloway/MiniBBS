@@ -20,16 +20,34 @@ class Table {
 	/* CSS classes to be applied to a particular row, as specified by the key. */
 	private $row_classes = array();
 	
-	/* Sets the content of each <th> cell, and optionally the primary column. */
-	public function __construct($columns = array(), $primary = null) {
+	/* A CSS class to be applied to <table>. */
+	private $table_class;
+	
+	/**
+	 * Sets the content of each <th> cell, and optionally the primary column.
+	 * @param  array  $columns  An array of values for the header cells.
+	 * @param  mixed  $primary  An int or array of ints numbering columns *not* to be set to class="minimal".
+	 * @param  string $class    A CSS class to be assigned to the table.
+	 */
+	public function __construct($columns = array(), $primary = null, $class = null) {
 		$this->columns = (array) $columns;
 		
+		if(isset($class)) {
+			$this->table_class = $class;
+		}
+		
+		/* Remove primary columns from the array. */
 		if(isset($primary)) {
-			/* All secondary columns will be shrunk to make room for the primary column. */
-			unset($columns[$primary]);
-			foreach($columns as $key => $column) {
-				$this->add_td_class($key, 'minimal');
+			$primary = (array) $primary;
+
+			foreach($primary as $key) {
+				unset($columns[$key]);
 			}
+		}
+		
+		/* All secondary columns will be shrunk to make room for the primary columns. */
+		foreach($columns as $key => $column) {
+			$this->add_td_class($key, 'minimal');
 		}
 	}
 	
@@ -74,7 +92,7 @@ class Table {
 			echo '<p>' . $no_rows_message . '</p>';
 		else:
 ?>
-<table>
+<table<?php if(isset($this->table_class)) echo ' class="'.$this->table_class.'"'?>>
 	<thead>
 		<tr>
 <?php	
