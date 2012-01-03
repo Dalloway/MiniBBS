@@ -183,7 +183,7 @@ class Permission {
 		(
 			"SELECT reason, param, time
 			FROM mod_actions
-			WHERE target = ? AND action = 'ban_ip' OR action = 'ban_uid' 
+			WHERE target = ? AND (action = 'ban_ip' OR action = 'ban_uid')
 			ORDER BY time DESC
 			LIMIT 1", 
 			$target
