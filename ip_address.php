@@ -22,7 +22,7 @@ $template->onload = 'focusId(\'ban_length\'); init();';
 
 // Check for ban.
 $banned = false;
-if($perm->is_banned($ip_address)) {
+if($perm->ip_banned($ip_address, false)) {
 	list($ban_reason, $ban_expiry, $ban_filed) = $perm->get_ban_log($ip_address);
 	if ( ! empty($ban_filed) && ($ban_expiry == 0 || $ban_expiry > $_SERVER['REQUEST_TIME']) ) {
 		$banned = true;

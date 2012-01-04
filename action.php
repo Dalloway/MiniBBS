@@ -493,6 +493,48 @@ switch($_GET['action']) {
 		}
 		
 	break;
+	
+	case 'unban_cidr':
+		if( ! $perm->get('ban')) {
+			error::fatal(m('Error: Access denied'));
+		}
+		
+		if($perm->get_ban_type($_GET['id']) !== 'cidr') {
+			error::fatal('That is not a valid CIDR address.');
+		}
+		
+		$id = $_GET['id'];
+		$template->title = 'Unban CIDR range ' . htmlspecialchars($id);
+		
+		if(isset($_POST['confirm'])) {
+			$db->q('DELETE FROM bans WHERE target = ?', $id);
+			cache::clear('bans');
+			
+			log_mod('unban_cidr', $id);
+			redirect('CIDR range unbanned.', 'mod_log');
+		}
+	break;
+	
+	case 'unban_wild':
+		if( ! $perm->get('ban')) {
+			error::fatal(m('Error: Access denied'));
+		}
+		
+		if($perm->get_ban_type($_GET['id']) !== 'wild') {
+			error::fatal('That is not a valid wildcard IP.');
+		}
+		
+		$id = $_GET['id'];
+		$template->title = 'Unban wildcard range ' . htmlspecialchars($id);
+
+		if(isset($_POST['confirm'])) {
+			$db->q('DELETE FROM bans WHERE target = ?', $id);
+			cache::clear('bans');
+			
+			log_mod('unban_wild', $id);
+			redirect('Wildcard range unbanned.', 'mod_log');
+		}
+	break;
 
 	case 'stick_topic':
 	

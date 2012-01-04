@@ -13,6 +13,7 @@ $tables['activity'] = "CREATE TABLE IF NOT EXISTS `activity` (
 
 $tables['bans'] = "CREATE TABLE IF NOT EXISTS `bans` (
   `target` varchar(39) CHARACTER SET utf8 NOT NULL,
+  `type` VARCHAR(9) NOT NULL, 
   `appealed` tinyint(1) unsigned NOT NULL,
   PRIMARY KEY (`target`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -143,7 +144,7 @@ PRIMARY KEY ( `key` )
 $tables['mod_actions'] = "CREATE TABLE IF NOT EXISTS `mod_actions` (
   `action` varchar(255) NOT NULL,
   `type` varchar(20) CHARACTER SET utf8 NOT NULL,
-  `target` char(23) NOT NULL,
+  `target` text NOT NULL,
   `mod_uid` char(23) NOT NULL,
   `mod_ip` varchar(100) NOT NULL,
   `time` int(10) unsigned NOT NULL,

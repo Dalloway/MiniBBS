@@ -7,12 +7,30 @@
  * would not allow us to immediately demod someone.) The "groups" table stores group settings.
  */
 class Permission {
-	/* Banned IPs and UIDs */
-	private $bans = array();
+	/**
+	 * Banned IPs, UIDs, wildcard and CIDR ranges, each in their own array.
+	 * 'uid'  : Banned UIDs, stored as values with a numerical index.
+	 * 'ip'   : Specifically banned IPs, stored as values with a numerical index.
+	 * 'range': Banned wildcard and CIDR ranges, with the ban (e.g., 127.0.0.1/24 or 127.0.*.*
+	 *          as key. The value is an array with two elements: The range's minimum IP in long
+	 *          form, and the maximum IP in long form (ip2long).
+	 */
+	private $bans = array
+	(
+		'uid'   => array(),
+		'ip'    => array(),
+		'range' => array()
+	);
+	
+	/* Results of ban checks are cached here, to avoid repeating the check on the same request. */
+	private $ban_checks = array();
+	
 	/* Groups and their settings */
 	private $groups = array();
+	
 	/* Users who belong to a non-default group, or who did at one point */
 	private $group_users = array();
+	
 	/* The group ID to which the current user belongs */
 	private $current_group = 1;
 	
@@ -43,8 +61,39 @@ class Permission {
 		
 		$bans = cache::fetch('bans');
 		if($bans === false) {
-			$res = $db->q('SELECT target FROM bans');
-			$bans = $res->fetchAll(PDO::FETCH_COLUMN);
+			/* Fetch bans, grouped into arrays by type */
+			$res = $db->q('SELECT `type`, `target` FROM bans');
+			$bans = $res->fetchAll(PDO::FETCH_COLUMN|PDO::FETCH_GROUP);
+			
+			/* Make sure 'ip', 'uid' and 'range' are set */
+			$bans = array_merge($this->bans, $bans);
+			
+			/* Merge CIDR/wildcard bans into one array and get their ranges */
+			if(isset($bans['cidr'])) {
+				foreach($bans['cidr'] as $cidr) {	
+					list($subnet, $suffix) = explode('/', $cidr);
+					$min_ip = ip2long($subnet);
+					/* Convert suffix to netmask */
+					$min_ip &= ~(( 1 << (32 - $suffix)) - 1);
+					$max_ip = $min_ip + pow(2, 32 - $suffix) - 1;
+					
+					$bans['range'][$cidr] = array($min_ip, $max_ip);
+				}
+				
+				unset($bans['cidr']);
+			}
+			
+			if(isset($bans['wild'])) {
+				foreach($bans['wild'] as $wildcard) {
+					$min_ip = ip2long(str_replace('*', '0', $wildcard));
+					$max_ip = ip2long(str_replace('*', '255', $wildcard));
+					
+					$bans['range'][$wildcard] = array($min_ip, $max_ip);
+				}
+				
+				unset($bans['wild']);
+			}
+			
 			cache::set('bans', $bans);
 		}
 		$this->bans = $bans;
@@ -121,23 +170,53 @@ class Permission {
 		return false;
 	}
 	
-	/* Returns true if $target (an IP address or UID) is banned */
-	public function is_banned($target) {
-		if(in_array($target, $this->bans)) {
-			return true;
+	/* Returns the ban target if $ip is banned or affected by a range ban, or false otherwise. */
+	public function ip_banned($ip, $range_check = true) {
+		if(isset($this->ban_checks[$ip])) {
+			return $this->ban_checks[$ip];
 		}
-		return false;
+		
+		$res = false;
+		
+		if(in_array($ip, $this->bans['ip'])) {
+			$res = $ip;
+		}
+		
+		if($range_check && ! empty($this->bans['range'])) {
+			$long_ip = ip2long($ip);
+			
+			foreach($this->bans['range'] as $ban => $range) {
+				if($long_ip >= $range[0] && $long_ip <= $range[1]) {
+					$res = $ban;
+				}
+			}
+		}
+		
+		$this->ban_checks[$ip] = $res;
+		
+		return $res;
+	}
+	
+	/* Returns true if $uid is banned, or false otherwise. */
+	public function uid_banned($uid) {
+		if(isset($this->ban_checks[$uid])) {
+			return $this->ban_checks[$uid];
+		}
+		
+		$res = in_array($uid, $this->bans['uid']);
+		$this->ban_checks[$uid] = $res;
+		
+		return $res;
 	}
 	
 	/* Kills the script if the current user's IP or UID is banned */
 	public function die_on_ban() {
 		global $db;
 	
-		if($this->is_banned($_SESSION['UID'])) {
+		if($this->uid_banned($_SESSION['UID'])) {
 			$ban_target = $_SESSION['UID'];
 			$ban_message = 'Your UID is banned.';
-		} else if($this->is_banned($_SERVER['REMOTE_ADDR'])) {
-			$ban_target = $_SERVER['REMOTE_ADDR'];
+		} else if($ban_target = $this->ip_banned($_SERVER['REMOTE_ADDR'])) {
 			$ban_message = 'Your IP address ('.$_SERVER['REMOTE_ADDR'].') is banned.';
 		} else {
 			return false;
@@ -183,7 +262,7 @@ class Permission {
 		(
 			"SELECT reason, param, time
 			FROM mod_actions
-			WHERE target = ? AND (action = 'ban_ip' OR action = 'ban_uid')
+			WHERE target = ? AND (action = 'ban_ip' OR action = 'ban_uid' OR action = 'ban_cidr' OR action = 'ban_wild')
 			ORDER BY time DESC
 			LIMIT 1", 
 			$target
@@ -200,6 +279,37 @@ class Permission {
 		
 		$res = $db->q('SELECT appealed FROM bans WHERE target = ?', $target);
 		return $res->fetchColumn();
+	}
+	
+	/* Returns 'uid', 'ip', 'cidr' or 'wild' depending on the character of $target. Throws exception for invalid formats. */
+	public function get_ban_type($target) {
+		if(filter_var($target, FILTER_VALIDATE_IP)) {
+			$type = 'ip';
+		} else if(strpos($target, '*') !== false) {
+			$type = 'wild';
+			
+			if( ! filter_var(str_replace('*', '0', $target), FILTER_VALIDATE_IP)) {
+				throw new Exception(htmlspecialchars($target) . ' is not a valid wildcard ban.');
+			}
+		} else if(strpos($target, '/') !== false) {
+			$type = 'cidr';
+			
+			list($subnet, $suffix) = explode('/', $target);
+			
+			if( ! ctype_digit($suffix) || $suffix > 32) {
+				throw new Exception('/' . htmlspecialchars($suffix) . ' is not a valid CIDR suffix.');
+			}
+			
+			if( ! filter_var($subnet, FILTER_VALIDATE_IP)) {
+				throw new Exception(htmlspecialchars($subnet) . ' is not a valid IP address.');
+			}
+		} else if(id_exists($target)) {
+			$type = 'uid';
+		} else {
+			throw new Exception(htmlspecialchars($target) . ' does not seem to be a valid IP, UID or range ban.');
+		}
+		
+		return $type;
 	}
 }
 

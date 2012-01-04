@@ -78,7 +78,7 @@ if( ! $perm->get('limit_ip') || $perm->get('limit_ip_max') > $post_count || $uid
 
 /* Check for ban. */
 $banned = false;
-if($perm->is_banned($_GET['uid'])) {
+if($perm->uid_banned($_GET['uid'])) {
 	list($ban_reason, $ban_expiry, $ban_filed) = $perm->get_ban_log($_GET['uid']);
 	if ( ! empty($ban_filed) && ($ban_expiry == 0 || $ban_expiry > $_SERVER['REQUEST_TIME']) ) {
 		$banned = true;

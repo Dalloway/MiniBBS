@@ -35,7 +35,7 @@ if ( ! empty($uid)) {
 		$notice = 'Welcome back.';
 		
 		if( ! empty($_POST['merge_uid'])) {
-			if($perm->is_banned($previous_id)) {
+			if($perm->uid_banned($previous_id)) {
 				$notice .= ' You cannot merge a banned ID.';
 			} else {
 				$db->q('UPDATE topics SET author = ? WHERE author = ?', $_SESSION['UID'], $previous_id);

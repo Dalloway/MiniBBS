@@ -7,13 +7,7 @@ if( ! $perm->get('ban')) {
 
 if(is_array($_POST['unban']) && check_token()) {
 	foreach($_POST['unban'] as $target) {
-		if(filter_var($target, FILTER_VALIDATE_IP)) {
-			$type = 'ip';
-		} else if(id_exists($target)) {
-			$type = 'uid';
-		} else {
-			error::fatal('That does not seem to be a valid IP or UID.');
-		}
+		$type = $perm->get_ban_type($target);
 		
 		$db->q('DELETE FROM bans WHERE target = ?', $target);
 		log_mod('unban_' . $type, $target);
@@ -34,7 +28,7 @@ $res = $db->q
 	"SELECT bans.target, mod_actions.action, mod_actions.reason, mod_actions.mod_uid, mod_actions.time, mod_actions.param AS expiry
 	FROM bans
 	INNER JOIN mod_actions ON bans.target = mod_actions.target
-	WHERE mod_actions.action = 'ban_ip' OR mod_actions.action = 'ban_uid'
+	WHERE mod_actions.action = 'ban_ip' OR mod_actions.action = 'ban_uid' OR mod_actions.action = 'ban_cidr' OR mod_actions.action = 'ban_cidr'
 	GROUP BY bans.target
 	ORDER BY mod_actions.time DESC
 	LIMIT ".$page->offset.', '.$page->limit
@@ -54,10 +48,18 @@ while($ban = $res->fetchObject()) {
 		/* Expired. */
 		continue;
 	}
+	
+	if($ban->action == 'ban_ip') {
+		$target = '<a href="'.DIR.'IP_address/'.$ban->target.'">'.$ban->target.'</a>';
+	} else if($ban->action == 'ban_uid') {
+		$target = '<a href="'.DIR.'profile/'.$ban->target.'">'.$ban->target.'</a>';
+	} else {
+		$target = htmlspecialchars($ban->target);
+	}
 
 	$values = array
 	(
-		'<input type="checkbox" name="unban[]" value="'.$ban->target.'" class="inline" onclick="highlightRow(this)" />' . ($ban->action == 'ban_ip' ? '<a href="'.DIR.'IP_address/'.$ban->target.'">'.$ban->target.'</a>' : '<a href="'.DIR.'profile/'.$ban->target.'">'.$ban->target.'</a>'),
+		'<input type="checkbox" name="unban[]" value="'.$ban->target.'" class="inline" onclick="highlightRow(this)" />' . $target,
 		htmlspecialchars($ban->reason),
 		'<a href="'.DIR.'profile/'.$ban->mod_uid.'">'.($perm->get_name($ban->mod_uid) ? $perm->get_name($ban->mod_uid) : $ban->mod_uid).'</a>',
 		'<span class="help" title="' . format_date($ban->time) . '">' . age($ban->time) . '</span>',

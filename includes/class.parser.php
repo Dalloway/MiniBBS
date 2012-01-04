@@ -217,7 +217,7 @@ class parser {
 				
 				foreach($columns as $key => $column) {
 					if($column[0] === '!') {
-						/* This is the main column; it begins with ||! */
+						/* This is a primary column; it begins with ||! */
 						$columns[$key] = ltrim($column, '!');
 						$main_columns[] = $key;
 					}
@@ -243,7 +243,7 @@ class parser {
 			$table = str_replace(array("\r", "\n"), '', $table);
 			$post = $before_table . $table . $after_table;
 			
-			/* Parse any remaining tables -- up to 6, another arbitrary limit. */
+			/* Parse any remaining tables -- up to 7, another arbitrary limit. */
 			if($recurse_level < 6 && strpos($post, "\n|") !== false) {
 				$post = self::table($post, ++$recurse_level);
 			}

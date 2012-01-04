@@ -11,10 +11,10 @@ if( ! ctype_digit($_GET['id'])) {
 	error::fatal('Invalid ID.');
 }
 
-if($perm->is_banned($_SESSION['UID'])) {
+if($perm->uid_banned($_SESSION['UID'])) {
 	$has_appealed = $perm->get_ban_appeal($_SESSION['UID']);
-} else if($perm->is_banned($_SERVER['REMOTE_ADDR'])) {
-	$has_appealed = $perm->get_ban_appeal($_SERVER['REMOTE_ADDR']);
+} else if($ban_target = $perm->ip_banned($_SERVER['REMOTE_ADDR'])) {
+	$has_appealed = $perm->get_ban_appeal($ban_target);
 }
 
 /* Select the PM and its children. */

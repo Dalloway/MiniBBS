@@ -71,7 +71,7 @@ if($defcon === false) {
 define('DEFCON', $defcon);
 
 /* If necessary, assign the client a new ID. */
-if(empty($_COOKIE['UID']) && ! $perm->is_banned($_SERVER['REMOTE_ADDR'])) {
+if(empty($_COOKIE['UID']) && ! $perm->ip_banned($_SERVER['REMOTE_ADDR'])) {
 	create_id();
 } else if( ! empty($_COOKIE['password']) && ! isset($_SESSION['ID_activated'])) {
 	/* Log in those who have just began their session. */

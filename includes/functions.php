@@ -690,8 +690,12 @@ function log_mod($action, $target, $param = '', $reason = '', $mod = null) {
 		
 		case 'ban_ip':
 		case 'ban_uid':
+		case 'ban_cidr':
+		case 'ban_wild':
 		case 'unban_ip':
 		case 'unban_uid':
+		case 'unban_cidr':
+		case 'unban_wild':
 			$type = 'ban';
 		break;
 			

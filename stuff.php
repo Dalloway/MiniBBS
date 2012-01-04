@@ -72,6 +72,7 @@ if ($perm->get('cms') || $perm->get('ban') || $perm->get('defcon')):
 	endif;
 	if($perm->get('ban')):
 ?>
+	<li><a href="<?php echo DIR ?>ban">Ban user</a>  — <span class="unimportant">Ban a UID, IP or IP range.</span></li>
 	<li><a href="<?php echo DIR ?>bans">Bans</a>  — <span class="unimportant">View a list of current bans and manage them.</span></li>
 <?php
 	endif;

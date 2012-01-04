@@ -7,9 +7,9 @@ force_id();
 $template->title = 'Create private message';
 
 $banned = false;
-if($perm->is_banned($_SESSION['UID'])) {
+if($perm->uid_banned($_SESSION['UID'])) {
 	$banned = $_SESSION['UID'];
-} else if($perm->is_banned($_SERVER['REMOTE_ADDR'])) {
+} else if($perm->ip_banned($_SERVER['REMOTE_ADDR'])) {
 	$banned = $_SERVER['REMOTE_ADDR'];
 }
 if($banned) {
