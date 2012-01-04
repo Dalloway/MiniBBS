@@ -238,7 +238,8 @@ $tables['replies'] = "CREATE TABLE IF NOT EXISTS `replies` (
   KEY `author` (`author`),
   KEY `parent_id` (`parent_id`),
   KEY `author_ip` (`author_ip`),
-  KEY `time` (`time`)
+  KEY `time` (`time`),
+  KEY `parent_time` (`parent_id`, `time`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['reports'] = "CREATE TABLE IF NOT EXISTS `reports` (
@@ -285,7 +286,7 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
   KEY `author_ip` (`author_ip`),
   KEY `last_post` (`last_post`),
   KEY `time` (`time`),
-  KEY `sticky` (`sticky`)
+  KEY `sticky_bump` (`sticky`, `last_post`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (

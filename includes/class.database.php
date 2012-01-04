@@ -20,11 +20,8 @@ class Database extends PDO {
 		'params'   => array()
 	);
 	
-	/* The number of SQL queries issued. */
-	public $query_count = 0;
-	
-	/* The total time consumed by SQL queries, in seconds.*/
-	public $query_time  = 0;
+	/* Previous queries (keys) with their execution times (values). */
+	public $queries = array();
 
 	/* Construct with our own statement class. */
 	public function __construct($username, $password, $server, $database) {
@@ -211,6 +208,16 @@ class Database extends PDO {
 		
 		return $this;
 	}
+	
+	/* Returns the total SQL execution time, in seconds. */
+	public function query_time() {
+		return array_sum($this->queries);
+	}
+	
+	/* Returns the total number of SQL queries so far. */
+	public function query_count() {
+		return count($this->queries);
+	}
 }
 
 /* The prepared statement; returned by MiniDB->prepare() */
@@ -227,8 +234,7 @@ class DatabaseStatement extends PDOStatement {
 		
 		$query_start = microtime(true);
 		$res = parent::execute($values);
-		$db->query_time += microtime(true) - $query_start;
-		$db->query_count++;
+		$db->queries[ $this-> queryString ] = microtime(true) - $query_start;
 	}
 }
 

@@ -22,8 +22,8 @@ if( ! empty($_GET['q'])) {
 		}
 	}
 	
-	if (strlen($search_query) < 3) {
-		error::add('Your query must be at least 3 characters.');
+	if ($search_query === '') {
+		error::add('Your must enter a search term.');
 	} else if(strlen($search_query) > 255) {
 		error::add('Your query must be shorter than 256 characters.');
 	}

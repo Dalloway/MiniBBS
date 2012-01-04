@@ -227,8 +227,8 @@ class Template {
 		global $db;
 		
 		$stats['total_time'] = round(microtime(true) - $this->start_time, 3);
-		$stats['query_time'] = $db->query_time;
-		$stats['query_count'] = $db->query_count;
+		$stats['query_time'] = $db->query_time();
+		$stats['query_count'] = $db->query_count();
 		$stats['query_percent'] = round($stats['query_time'] * 100 / $stats['total_time']);
 		
 		return $stats;

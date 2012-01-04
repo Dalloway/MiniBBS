@@ -6,8 +6,6 @@ if ( ! ctype_digit($_GET['id'])) {
 }
 $topic_id = (int) $_GET['id'];
 
-update_activity('topic', $topic_id);
-
 /* Delete any citation notifications for this topic. */
 if($notifications['citations']) {
 	$res = $db->q('DELETE FROM citations WHERE uid = ? AND topic = ?', $_SESSION['UID'], $topic_id);
@@ -30,7 +28,9 @@ if( ! $topic = $res->fetchObject()) {
 	error::fatal('There is no such topic. It may have been deleted.');
 }
 
-if($topic->deleted && $topic->author != $_SESSION['UID'] && ! $perm->get('undelete')) {
+if( ! $topic->deleted) {
+	update_activity('topic', $topic_id);
+} else if($topic->author != $_SESSION['UID'] && ! $perm->get('undelete')) {
 	$template->title = 'Deleted topic';
 	error::fatal('This topic was deleted.');
 }
