@@ -275,6 +275,15 @@ fieldset {
 	margin:1em 0;
 }
 
+form.mod_reason {
+	float:right;
+	margin-right:1em;
+}
+
+form.mod_reason, form.mod_reason * {
+	display:inline;
+}
+
 #syntax_link {
 	float: right;
 	margin-top:4px;

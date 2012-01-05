@@ -107,6 +107,7 @@ RewriteRule ^delete_image/([0-9]+)$ action.php?action=delete_image&type=topic&id
 RewriteRule ^delete_image/([0-9]+)/([0-9]+)$ action.php?action=delete_image&type=reply&topic=$1&id=$2
 RewriteRule ^mod_log/?([0-9]+)?$ mod_log.php?p=$1 [L]
 RewriteRule ^mod_log/([a-z_]+)/(.+)$ mod_log.php?$1=$2 [L]
+RewriteRule ^edit_reason/([0-9]+)$ mod_reason.php?id=$1 [L]
 RewriteRule ^report_topic/?([0-9]+)$ report.php?topic=$1 [L]
 RewriteRule ^report_reply/?([0-9]+)$ report.php?reply=$1 [L]
 RewriteRule ^reports$ reports.php [L]

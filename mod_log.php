@@ -48,7 +48,8 @@ $searchable_types = array
 	'stick' => 'Sticky logs',
 	'defcon' => 'DEFCON logs',
 	'cms' => 'CMS logs',
-	'merge' => 'Merge logs'
+	'merge' => 'Merge logs',
+	'system' => 'System logs'
 );
 ?>
 <fieldset>
@@ -80,7 +81,7 @@ $searchable_types = array
 	</form>
 </fieldset>
 <?php
-$db->select('action, target, reason, param, mod_uid, time')->from('mod_actions');
+$db->select('id, action, target, reason, param, mod_uid, time')->from('mod_actions');
 if( ! empty($_REQUEST['log_type']) && isset($searchable_types[$_REQUEST['log_type']])) {
 	$db->where('type = ?', $_REQUEST['log_type']);
 }
@@ -109,6 +110,8 @@ function censor_ip($ip) {
 }
 
 while( $log = $res->fetchObject() ) {
+	$undo = '';
+
 	if($log->mod_uid === 'system') {
 		$mod_name = m('System');
 	} else {
@@ -124,7 +127,7 @@ while( $log = $res->fetchObject() ) {
 	
 	switch($log->action) {
 		case 'db_maintenance':
-			$action = 'Cleaned up the database; ' . number_format($log->param) . ' rows removed.';
+			$action = 'Optimized the database; ' . number_format($log->param) . ' rows removed.';
 		break;
 	
 		case 'delete_image': 
@@ -135,7 +138,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Deleted a page.';
 			
 			if($perm->get('cms')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'undelete_page/'.$log->target.'" onclick="return quickAction(this, \'Really undelete page?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'undelete_page/'.$log->target.'" onclick="return quickAction(this, \'Really undelete page?\');">undo</a>]';
 			}
 		break;
 		
@@ -143,7 +146,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Restored a page.';
 			
 			if($perm->get('cms')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'delete_page/'.$log->target.'" onclick="return quickAction(this, \'Really delete page?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'delete_page/'.$log->target.'" onclick="return quickAction(this, \'Really delete page?\');">undo</a>]';
 			}
 		break;
 		
@@ -151,7 +154,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Edited <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			
 			if($perm->get('edit_others')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that topic edit?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that topic edit?\');">undo</a>]';
 			}
 		break;
 		
@@ -159,7 +162,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Edited <a href="'.DIR.'reply/'.$log->target.'">a reply</a>.';
 			
 			if($perm->get('edit_others')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that reply edit?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that reply edit?\');">undo</a>]';
 			}
 		break;
 		
@@ -179,9 +182,9 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]</span>';
+				$undo = '<span class="undo">[expired]';
 			} else if($perm->get('ban')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unban_poster/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unban_poster/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]';
 			}
 		break;
 		
@@ -211,9 +214,9 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]</span>';
+				$undo = '<span class="undo">[expired]';
 			} else if($perm->get('ban')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unban_IP/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unban_IP/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]';
 			}
 		break;
 		
@@ -244,9 +247,9 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]</span>';
+				$undo = '<span class="undo">[expired]';
 			} else if($perm->get('ban')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unban_CIDR/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unban_CIDR/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]';
 			}
 		break;
 		
@@ -270,9 +273,9 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]</span>';
+				$undo = '<span class="undo">[expired]';
 			} else if($perm->get('ban')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unban_wild/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unban_wild/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]';
 			}
 		break;
 		
@@ -283,28 +286,28 @@ while( $log = $res->fetchObject() ) {
 		case 'stick_topic':
 			$action = 'Stuck <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			if($perm->get('stick')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unstick_topic/'.$log->target.'" onclick="return quickAction(this, \'Really unstick that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unstick_topic/'.$log->target.'" onclick="return quickAction(this, \'Really unstick that topic?\');">undo</a>]';
 			}
 		break;
 		
 		case 'unstick_topic':
 			$action = 'Unstuck <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			if($perm->get('stick')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'stick_topic/'.$log->target.'" onclick="return quickAction(this, \'Really sticky that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'stick_topic/'.$log->target.'" onclick="return quickAction(this, \'Really sticky that topic?\');">undo</a>]';
 			}
 		break;
 		
 		case 'lock_topic':
 			$action = 'Locked <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			if($perm->get('lock')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'unlock_topic/'.$log->target.'" onclick="return quickAction(this, \'Really unlock that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'unlock_topic/'.$log->target.'" onclick="return quickAction(this, \'Really unlock that topic?\');">undo</a>]';
 			}
 		break;
 		
 		case 'unlock_topic':
 			$action = 'Unlocked <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			if($perm->get('lock')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'lock_topic/'.$log->target.'" onclick="return quickAction(this, \'Really lock that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'lock_topic/'.$log->target.'" onclick="return quickAction(this, \'Really lock that topic?\');">undo</a>]';
 			}
 		break;
 		
@@ -323,7 +326,7 @@ while( $log = $res->fetchObject() ) {
 			}
 			
 			if($perm->get('undelete')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'undelete_topic/'.$log->target.'" onclick="return quickAction(this, \'Really restore that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'undelete_topic/'.$log->target.'" onclick="return quickAction(this, \'Really restore that topic?\');">undo</a>]';
 			}
 		break;
 		
@@ -342,7 +345,7 @@ while( $log = $res->fetchObject() ) {
 			}
 			
 			if($perm->get('undelete')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'undelete_reply/'.$log->target.'" onclick="return quickAction(this, \'Really restore that reply?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'undelete_reply/'.$log->target.'" onclick="return quickAction(this, \'Really restore that reply?\');">undo</a>]';
 			}
 		break;
 		
@@ -350,7 +353,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Restored <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			
 			if($perm->get('delete')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'delete_topic/'.$log->target.'" onclick="return quickAction(this, \'Really delete that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'delete_topic/'.$log->target.'" onclick="return quickAction(this, \'Really delete that topic?\');">undo</a>]';
 			}
 		break;
 		
@@ -358,7 +361,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Restored <a href="'.DIR.'reply/'.$log->target.'">a reply</a>.';
 			
 			if($perm->get('delete')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'delete_reply/'.$log->target.'" onclick="return quickAction(this, \'Really delete that reply?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'delete_reply/'.$log->target.'" onclick="return quickAction(this, \'Really delete that reply?\');">undo</a>]';
 			}
 		break;
 		
@@ -397,7 +400,7 @@ while( $log = $res->fetchObject() ) {
 		case 'defcon':
 			$action = 'Adjusted the DEFCON to '.$log->target.'.';
 			if($perm->get('defcon')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'defcon">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'defcon">undo</a>]';
 			}
 		break;
 		
@@ -409,7 +412,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Edited a page (<a href="'.DIR. htmlspecialchars($log->target).'">'.htmlspecialchars($log->target).'</a>).';
 			
 			if($perm->get('cms')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that page edit?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really revert that page edit?\');">undo</a>]';
 			}
 		break;
 		
@@ -417,7 +420,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Reverted changes to a page.';
 			
 			if($perm->get('cms')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that page reversion?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that page reversion?\');">undo</a>]';
 			}
 		break;
 		
@@ -425,7 +428,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Reverted changes to <a href="'.DIR.'reply/'.$log->target.'">a reply</a>.';
 			
 			if($perm->get('edit_others')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that reply reversion?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that reply reversion?\');">undo</a>]';
 			}
 		break;
 		
@@ -433,7 +436,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Reverted changes to <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			
 			if($perm->get('edit_others')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that topic reversion?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'revert_change/'.$log->param.'" onclick="return quickAction(this, \'Really undo that topic reversion?\');">undo</a>]';
 			}
 		break;
 		
@@ -445,7 +448,7 @@ while( $log = $res->fetchObject() ) {
 			}
 			
 			if($perm->get('manage_permissions')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'manage_permissions/'.$log->target.'">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'manage_permissions/'.$log->target.'">undo</a>]';
 			}
 		break;
 		
@@ -453,7 +456,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Merged a topic (#' . number_format($log->target) . ') into <a href="'.DIR.'topic/'.$log->param.'">another</a>.';
 			
 			if($perm->get('merge')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'undo_merge/'.$log->target.'" onclick="return quickAction(this, \'Really unmerge that topic?\');">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'undo_merge/'.$log->target.'" onclick="return quickAction(this, \'Really unmerge that topic?\');">undo</a>]';
 			}
 		break;
 		
@@ -461,7 +464,7 @@ while( $log = $res->fetchObject() ) {
 			$action = 'Unmerged <a href="'.DIR.'topic/'.$log->target.'">a topic</a>.';
 			
 			if($perm->get('merge')) {
-				$undo = ' <span class="undo">[<a href="'.DIR.'merge/'.$log->target.'">undo</a>]</span>';
+				$undo = '[<a href="'.DIR.'merge/'.$log->target.'">undo</a>]';
 			}
 		break;
 		
@@ -473,10 +476,14 @@ while( $log = $res->fetchObject() ) {
 		$action .= ' Reason: "' . htmlspecialchars($log->reason) . '".';
 	}
 	
-	if(isset($undo)) {
-		$action .= $undo;
+	if($log->mod_uid === $_SESSION['UID']) {
+		$undo .= ' <a href="' . DIR . 'edit_reason/' . $log->id . '" onclick="return editReason(this, \'' . rawurlencode($log->reason) . '\', \'' . $_SESSION['token'] . '\')" title="Edit reason" class="help mod_edit">[+]</a>';
 	}
 	
+	if( ! empty($undo)) {
+		$action .= ' <span class="undo">' . $undo . '</span>';
+	}
+		
 	$values = array
 	(
 		$mod_name,

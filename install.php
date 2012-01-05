@@ -12,7 +12,7 @@ $tables['activity'] = "CREATE TABLE IF NOT EXISTS `activity` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
 $tables['bans'] = "CREATE TABLE IF NOT EXISTS `bans` (
-  `target` varchar(39) CHARACTER SET utf8 NOT NULL,
+  `target` varchar(39) NOT NULL,
   `type` VARCHAR(9) NOT NULL, 
   `appealed` tinyint(1) unsigned NOT NULL,
   PRIMARY KEY (`target`)
@@ -20,11 +20,11 @@ $tables['bans'] = "CREATE TABLE IF NOT EXISTS `bans` (
 
 $tables['bulletins'] = "CREATE TABLE IF NOT EXISTS `bulletins` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `message` text CHARACTER SET utf8 NOT NULL,
+  `message` text NOT NULL,
   `time` int(11) unsigned NOT NULL,
-  `author` char(23) CHARACTER SET utf8 NOT NULL,
-  `name` varchar(60) CHARACTER SET utf8 DEFAULT NULL,
-  `trip` varchar(12) CHARACTER SET utf8 DEFAULT NULL,
+  `author` char(23) NOT NULL,
+  `name` varchar(60) DEFAULT NULL,
+  `trip` varchar(12) DEFAULT NULL,
   `ip` varchar(39) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ip` (`ip`)
@@ -40,8 +40,8 @@ $tables['citations'] = "CREATE TABLE IF NOT EXISTS `citations` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
 $tables['config'] = "CREATE TABLE IF NOT EXISTS `config` (
-  `name` varchar(38) CHARACTER SET utf8 NOT NULL,
-  `value` text CHARACTER SET utf8 NOT NULL,
+  `name` varchar(38) NOT NULL,
+  `value` text NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -63,8 +63,8 @@ $tables['flood_control'] = "CREATE TABLE IF NOT EXISTS `flood_control` (
 
 $tables['groups'] = "CREATE TABLE IF NOT EXISTS `groups` (
   `id` int(5) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(32) CHARACTER SET utf8 NOT NULL,
-  `link` varchar(32) CHARACTER SET utf8 NOT NULL,
+  `name` varchar(32) NOT NULL,
+  `link` varchar(32) NOT NULL,
   `edit_limit` int(11) unsigned NOT NULL,
   `post_reply` tinyint(1) unsigned NOT NULL,
   `post_topic` tinyint(1) unsigned NOT NULL DEFAULT '1',
@@ -104,9 +104,9 @@ $tables['groups'] = "CREATE TABLE IF NOT EXISTS `groups` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['group_users'] = "CREATE TABLE IF NOT EXISTS `group_users` (
-  `uid` char(23) CHARACTER SET utf8 NOT NULL,
+  `uid` char(23) NOT NULL,
   `group_id` int(5) unsigned NOT NULL,
-  `log_name` varchar(60) CHARACTER SET utf8 NOT NULL,
+  `log_name` varchar(60) NOT NULL,
   PRIMARY KEY (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
@@ -118,7 +118,7 @@ $tables['ignore_lists'] = "CREATE TABLE IF NOT EXISTS `ignore_lists` (
 
 $tables['images'] = "CREATE TABLE IF NOT EXISTS `images` (
   `file_name` varchar(80) NOT NULL,
-  `original_name` varchar(80) CHARACTER SET utf8 NOT NULL,
+  `original_name` varchar(80) NOT NULL,
   `md5` varchar(32) NOT NULL,
   `topic_id` int(10) unsigned DEFAULT NULL,
   `reply_id` int(10) unsigned DEFAULT NULL,
@@ -133,23 +133,23 @@ $tables['last_actions'] = "CREATE TABLE IF NOT EXISTS `last_actions` (
   PRIMARY KEY (`feature`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
-
-
 $tables['messages'] = "CREATE TABLE `messages` (
-`key` VARCHAR( 255 ) NOT NULL ,
-`message` TEXT NOT NULL ,
-PRIMARY KEY ( `key` )
-) ENGINE = MYISAM";
+  `key` VARCHAR( 255 ) NOT NULL ,
+  `message` TEXT NOT NULL ,
+  PRIMARY KEY ( `key` )
+) ENGINE = MYISAM DEFAULT CHARSET=utf8;";
 
 $tables['mod_actions'] = "CREATE TABLE IF NOT EXISTS `mod_actions` (
+  `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT, 
   `action` varchar(255) NOT NULL,
-  `type` varchar(20) CHARACTER SET utf8 NOT NULL,
+  `type` varchar(20) NOT NULL,
   `target` text NOT NULL,
   `mod_uid` char(23) NOT NULL,
   `mod_ip` varchar(100) NOT NULL,
   `time` int(10) unsigned NOT NULL,
-  `reason` text CHARACTER SET utf8 NOT NULL,
+  `reason` text NOT NULL,
   `param` text NOT NULL,
+  PRIMARY KEY (`id`),
   KEY `action` (`action`),
   KEY `type` (`type`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
@@ -187,7 +187,7 @@ $tables['pm_notifications'] = "CREATE TABLE IF NOT EXISTS `pm_notifications` (
 $tables['poll_options'] = "CREATE TABLE IF NOT EXISTS `poll_options` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `parent_id` int(11) unsigned NOT NULL,
-  `option` text CHARACTER SET utf8 NOT NULL,
+  `option` text NOT NULL,
   `votes` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `parent_id` (`parent_id`)
@@ -245,10 +245,10 @@ $tables['replies'] = "CREATE TABLE IF NOT EXISTS `replies` (
 
 $tables['reports'] = "CREATE TABLE IF NOT EXISTS `reports` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `type` varchar(6) CHARACTER SET utf8 NOT NULL,
+  `type` varchar(6) NOT NULL,
   `post_id` int(11) unsigned NOT NULL,
-  `reason` text CHARACTER SET utf8,
-  `reporter` char(23) CHARACTER SET utf8 NOT NULL,
+  `reason` text,
+  `reporter` char(23) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `reporter` (`reporter`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -263,9 +263,9 @@ $tables['search_log'] = "CREATE TABLE IF NOT EXISTS `search_log` (
 $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `time` int(10) unsigned NOT NULL,
-  `author` char(23) CHARACTER SET utf8 NOT NULL,
+  `author` char(23) NOT NULL,
   `namefag` varchar(60) DEFAULT NULL,
-  `tripfag` varchar(12) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `tripfag` varchar(12) COLLATE utf8_general_ci DEFAULT NULL,
   `link` varchar(60) DEFAULT NULL,
   `author_ip` varchar(100) NOT NULL,
   `replies` int(10) unsigned NOT NULL DEFAULT '0',
@@ -291,23 +291,23 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
 
 $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (
-  `uid` char(23) CHARACTER SET utf8 NOT NULL,
-  `password` varchar(32) CHARACTER SET utf8 NOT NULL,
+  `uid` char(23) NOT NULL,
+  `password` varchar(32) NOT NULL,
   `first_seen` int(10) unsigned NOT NULL,
   `last_seen` int(10) unsigned NOT NULL,
   `topic_visits` text NOT NULL,
-  `ip_address` varchar(39) CHARACTER SET utf8 NOT NULL,
-  `namefag` text CHARACTER SET utf8 NOT NULL,
+  `ip_address` varchar(39) NOT NULL,
+  `namefag` text NOT NULL,
   `post_count` INT(7) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`uid`),
   KEY `ip_address` (`ip_address`,`first_seen`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
 $tables['user_settings'] = "CREATE TABLE IF NOT EXISTS `user_settings` (
-  `uid` char(23) CHARACTER SET utf8 NOT NULL,
-  `memorable_name` varchar(100) CHARACTER SET utf8 NOT NULL,
-  `memorable_password` varchar(128) CHARACTER SET utf8 NOT NULL,
-  `email` varchar(100) CHARACTER SET utf8 NOT NULL,
+  `uid` char(23) NOT NULL,
+  `memorable_name` varchar(100) NOT NULL,
+  `memorable_password` varchar(128) NOT NULL,
+  `email` varchar(100) NOT NULL,
   `spoiler_mode` tinyint(1) NOT NULL DEFAULT '0',
   `snippet_length` smallint(3) unsigned NOT NULL DEFAULT '80',
   `posts_per_page` int(5) unsigned NOT NULL DEFAULT '0',
@@ -326,10 +326,10 @@ $tables['user_settings'] = "CREATE TABLE IF NOT EXISTS `user_settings` (
 
 $tables['user_styles'] = "CREATE TABLE IF NOT EXISTS `user_styles` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uid` char(23) CHARACTER SET utf8 NOT NULL,
+  `uid` char(23) NOT NULL,
   `md5` CHAR( 32 ) NOT NULL,
   `original` INT NOT NULL DEFAULT '0',  
-  `style` text CHARACTER SET utf8 NOT NULL,
+  `style` text NOT NULL,
   `public` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0',
   `name` VARCHAR( 32 ) NULL DEFAULT NULL ,
   `trip` VARCHAR( 12 ) NULL DEFAULT NULL ,
@@ -352,7 +352,7 @@ $tables['watchlists'] = "CREATE TABLE IF NOT EXISTS `watchlists` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
 $tables['whitelist'] = "CREATE TABLE IF NOT EXISTS `whitelist` (
-  `uid` char(23) CHARACTER SET utf8 NOT NULL,
+  `uid` char(23) NOT NULL,
   UNIQUE KEY `uid` (`uid`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 

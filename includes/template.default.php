@@ -11,7 +11,7 @@
 	<title><?php echo strip_tags($this->title) . ' — ' . SITE_TITLE ?></title>
 	<link rel="icon" type="image/png" href="<?php echo DIR ?>favicon.png" />
 	
-	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?16" />
+	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR ?>style/main.css?17" />
 	<link rel="stylesheet" type="text/css" media="screen" href="<?php echo DIR . 'style/themes/' . $this->get_stylesheet() . '.css?9' ?>" />
 <?php	
 	if($_SESSION['settings']['custom_style'] && $this->style_override === false):
@@ -34,7 +34,7 @@
 	endif;
 ?>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
-	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?11"></script>
+	<script type="text/javascript" src="<?php echo DIR; ?>javascript/main.js?12"></script>
 <?php
 	echo $this->head
 ?>

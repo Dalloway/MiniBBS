@@ -178,6 +178,44 @@ function imgurUpload(file, apiKey) {
 	return false;
 }
 
+function editReason(editLink, currentReason, token) {
+	$('.mod_reason').remove();
+	$('.mod_edit').show();
+	
+	form = document.createElement('form');
+	form.setAttribute('action', editLink.href);
+	form.setAttribute('method', 'post');
+	form.setAttribute('class', 'mod_reason');
+	
+	csrf = document.createElement('input');
+	csrf.setAttribute('name', 'CSRF_token');
+	csrf.setAttribute('type', 'hidden');
+	csrf.setAttribute('value', token);
+	
+	input = document.createElement('input');
+	input.setAttribute('name', 'reason');
+	input.setAttribute('type', 'text');
+	input.setAttribute('size', '46');
+	input.setAttribute('maxlength', '100');
+	
+	submit = document.createElement('input');
+	submit.setAttribute('type', 'submit');
+	
+	if(currentReason === '') {
+		submit.setAttribute('value', 'Add reason');
+	} else {
+		submit.setAttribute('value', 'Edit reason');
+		input.setAttribute('value', decodeURIComponent(currentReason));
+	}
+	
+	form.appendChild(csrf);
+	form.appendChild(input);
+	form.appendChild(submit);
+	$(editLink).parents('td').append(form);
+	$(editLink).hide();
+	
+	return false;
+}
 function init() {
 	if (document.getElementById(window.location.hash.substring(1))) {
 		if (window.location.hash.indexOf('reply_') != -1)
