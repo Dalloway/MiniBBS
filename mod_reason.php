@@ -20,7 +20,7 @@ if(isset($_POST['reason'])) {
 	
 	$log->reason = $_POST['reason'];
 	
-	if(strlen($log->reason) > 160) {
+	if(strlen($log->reason) > 260) {
 		error::add('Your reason must be under 160 characters.');
 	}
 	

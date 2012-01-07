@@ -132,7 +132,7 @@ do {
 				<li><a href="<?php echo DIR ?>report_PM/<?php echo $pm->id ?>">Report</a></li>
 <?php 
 			endif; 
-			if($pm->parent == $pm->id && ($pm->destination == 'mods' || $pm->destination == 'admins') && $perm->get('read_mod_pms') ):
+			if($pm->parent == $pm->id && (($op_destination == 'mods' && $perm->get('read_mod_pms')) || ($op_destination == 'admins' && $perm->get('read_admin_pms'))) ):
 ?>
 				<li><a href="<?php echo DIR ?>dismiss_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really dismiss this PM?');">Dismiss</a></li>
 <?php 
@@ -179,7 +179,7 @@ if(empty($has_appealed) && ! isset($system_pm)):
 			
 		<textarea name="contents" cols="80" rows="10" tabindex="2" id="qr_text"></textarea>
 <?php 
-		if( ($op_destination == 'mods' || $op_destination == 'admins') && $perm->get('read_mod_pms') ):
+		if( ($op_destination == 'mods' && $perm->get('read_mod_pms')) || ($op_destination == 'admins' && $perm->get('read_admin_pms')) ):
 ?>
 			<div class="row"> <input type="checkbox" name="dismiss" id="dismiss" class="inline" checked="checked" /> <label for="dismiss" class="inline help" title="If checked, other <?php echo $op_destination ?> will no longer be notified of this message or its current replies (unless the original sender replies again).">Dismiss message</label></div>
 <?php 

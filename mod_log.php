@@ -44,6 +44,7 @@ $searchable_types = array
 	'delete' => 'Deletion logs',
 	'edit' => 'Edit logs',
 	'ban' => 'Ban logs',
+	'unban' => 'Unban logs',
 	'lock' => 'Lock logs',
 	'stick' => 'Sticky logs',
 	'defcon' => 'DEFCON logs',
@@ -182,7 +183,7 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]';
+				$undo = '[expired]';
 			} else if($perm->get('ban')) {
 				$undo = '[<a href="'.DIR.'unban_poster/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]';
 			}
@@ -214,7 +215,7 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]';
+				$undo = '[expired]';
 			} else if($perm->get('ban')) {
 				$undo = '[<a href="'.DIR.'unban_IP/'.$log->target.'" onclick="return quickAction(this, \'Really unban '.$log->target.'?\');">undo</a>]';
 			}
@@ -247,7 +248,7 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]';
+				$undo = '[expired]';
 			} else if($perm->get('ban')) {
 				$undo = '[<a href="'.DIR.'unban_CIDR/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]';
 			}
@@ -273,7 +274,7 @@ while( $log = $res->fetchObject() ) {
 			}
 
 			if($log->param != '0' && $log->param < $_SERVER['REQUEST_TIME']) {
-				$undo = '<span class="undo">[expired]';
+				$undo = '[expired]';
 			} else if($perm->get('ban')) {
 				$undo = '[<a href="'.DIR.'unban_wild/'.htmlspecialchars($log->target).'" onclick="return quickAction(this, \'Really unban '.htmlspecialchars($log->target, ENT_QUOTES).'?\');">undo</a>]';
 			}

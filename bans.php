@@ -1,5 +1,6 @@
 <?php
 require './includes/bootstrap.php';
+force_id();
 
 if( ! $perm->get('ban')) {
 	error::fatal(m('Error: Access denied'));
@@ -28,7 +29,7 @@ $res = $db->q
 	"SELECT bans.target, mod_actions.action, mod_actions.reason, mod_actions.mod_uid, mod_actions.time, mod_actions.param AS expiry
 	FROM bans
 	INNER JOIN mod_actions ON bans.target = mod_actions.target
-	WHERE mod_actions.action = 'ban_ip' OR mod_actions.action = 'ban_uid' OR mod_actions.action = 'ban_cidr' OR mod_actions.action = 'ban_cidr'
+	WHERE mod_actions.type = 'ban'
 	GROUP BY bans.target
 	ORDER BY mod_actions.time DESC
 	LIMIT ".$page->offset.', '.$page->limit

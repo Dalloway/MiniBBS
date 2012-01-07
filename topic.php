@@ -461,7 +461,6 @@ while( $reply = $replies->fetchObject() ) {
 	if ($reply_count > 1) {
 		echo ', ' . age($reply->time, $topic->time) . ' after the original post';
 	}
-	echo '</span>';
 	
 	if($reply->original_parent && $reply->original_parent != $topic_id) {
 		if( ! isset($merges[$reply->original_parent])) {
@@ -470,10 +469,10 @@ while( $reply = $replies->fetchObject() ) {
 		} else {
 			$merge_tooltip = 'This was a reply to another topic merged into this one. Click me to jump to the original OP.';
 		}
-		echo ' <a href="'.DIR.'topic/' . (int) $_GET['id'] . page($topic->replies, $history[$merges[$reply->original_parent]]['post_number']) . '#reply_'.$merges[$reply->original_parent].'" class="merge_marker help" title="'.$merge_tooltip.'" onclick="highlightReply('.$merges[$reply->original_parent].')">⧒</a>';
+		echo ' <a href="'.DIR.'topic/' . (int) $_GET['id'] . page($topic->replies, $history[$merges[$reply->original_parent]]['post_number']) . '#reply_'.$merges[$reply->original_parent].'" class="merge_marker help" title="'.$merge_tooltip.'" onclick="highlightReply('.$merges[$reply->original_parent].')">[M]</a>';
 	}
-	
-	echo '<span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
+		
+	echo '</span><span class="reply_id unimportant"><a href="#top">[^]</a> <a href="#bottom">[v]</a> <a href="#reply_' . $reply->id . '" onclick="highlightReply(\'' . $reply->id . '\'); removeSnapbackLink">#' . number_format($reply->id) . '</a></span></h3>',
 	'<div class="body poster_body_'.$posters[$reply->author]['number'].'" id="reply_box_' . $reply->id . '">';
 
 	if($reply->imgur) {

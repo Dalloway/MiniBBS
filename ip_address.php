@@ -61,7 +61,7 @@ if ($banned) {
 		<label for="ban_length" class="inline">Ban length</label>
 		<input type="text" name="length" id="ban_length" value="<?php if( ! $banned) echo '1 day' ?>" class="inline help" tabindex="1" title="A ban length of 'indefinite' or '0' will never expire." onclick="this.value = ''" />
 		<label for="ban_reason" class="inline">Reason</label>
-		<input type="text" name="reason" id="ban_reason" value="<?php echo htmlspecialchars($ban_reason) ?>" class="inline help" maxlength="100" tabindex="2" title="Optional." />
+		<input type="text" name="reason" id="ban_reason" value="<?php echo htmlspecialchars($ban_reason) ?>" class="inline help" maxlength="260" tabindex="2" title="Optional." />
 		<input type="submit" value="<?php echo ($banned) ? 'Update ban length' : 'Ban' ?>" class="inline" />
 	</div>
 </form>

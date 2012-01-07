@@ -329,6 +329,14 @@ table {
 		width:1%;
 	}
 	
+	.image_gallery td {
+		text-align: center;
+	}
+	
+	.image_header {
+		margin-bottom: .7em;
+	}
+	
 	table th {
 		padding:.5em;
 		text-align:left;

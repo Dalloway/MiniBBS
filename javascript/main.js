@@ -196,7 +196,7 @@ function editReason(editLink, currentReason, token) {
 	input.setAttribute('name', 'reason');
 	input.setAttribute('type', 'text');
 	input.setAttribute('size', '46');
-	input.setAttribute('maxlength', '100');
+	input.setAttribute('maxlength', '260');
 	
 	submit = document.createElement('input');
 	submit.setAttribute('type', 'submit');
@@ -213,9 +213,11 @@ function editReason(editLink, currentReason, token) {
 	form.appendChild(submit);
 	$(editLink).parents('td').append(form);
 	$(editLink).hide();
+	input.focus();
 	
 	return false;
 }
+
 function init() {
 	if (document.getElementById(window.location.hash.substring(1))) {
 		if (window.location.hash.indexOf('reply_') != -1)
