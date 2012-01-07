@@ -700,6 +700,7 @@ function log_mod($action, $target, $param = '', $reason = '', $mod = null) {
 		case 'unban_cidr':
 		case 'unban_wild':
 			$type = 'unban';
+		break;
 			
 		case 'stick_topic':
 		case 'unstick_topic':
