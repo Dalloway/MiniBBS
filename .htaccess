@@ -50,7 +50,8 @@ RewriteRule ^delete_bulletin/([0-9]+)$ action.php?action=delete_bulletin&id=$1 [
 
 # Search.
 RewriteRule ^search$ search.php [L]
-RewriteRule ^search/(.+?)/?([0-9]+)?$ search.php?q=$1&p=$2 [L]
+RewriteRule ^search/(.+)$ search.php?q=$1 [L]
+RewriteRule ^search/(.+?)/([0-9]+)?$ search.php?q=$1&p=$2 [L]
 
 # Misc.
 RewriteRule ^dashboard$ dashboard.php [L]
@@ -81,7 +82,7 @@ RewriteRule ^new_style$ style_edit.php [L]
 RewriteRule ^edit_style/([0-9]+)$ style_edit.php?edit=$1 [L]
 RewriteRule ^view_style/([0-9]+)$ style_view.php?id=$1 [L]
 RewriteRule ^notepad$ notepad.php [L]
-RewriteRule ^The_Oracle$ oracle.php [L]
+RewriteRule ^image_gallery/?([0-9]+)?$ image_gallery.php?p=$1 [L]
 
 # Moderation.
 RewriteRule ^profile/([0-9a-zA-Z.]+)/?([0-9]+)?$ profile.php?uid=$1&p=$2 [L]

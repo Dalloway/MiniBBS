@@ -70,7 +70,7 @@ if( ! empty($_GET['q'])) {
 <?php
 
 if(isset($topic_results)) {
-	$search_query_p = preg_quote($search_query);
+	$search_query_p = preg_quote($search_query, '/');
 
 	/* Topic results */
 	$columns = array
@@ -149,8 +149,8 @@ if(isset($topic_results)) {
 		}
 		$snippet = parser::snippet($reply->body, 120);
 		
-		$headline = '<a href="'.DIR.'topic/'.$reply->parent_id.'">' . htmlspecialchars($reply->headline) . '</a>';
-		$headline = preg_replace('/(' .$search_query_p . ')/i', '<em class="marked">$1</em>', $headline);
+		$headline = preg_replace('/(' .$search_query_p . ')/i', '<em class="marked">$1</em>', htmlspecialchars($reply->headline));
+		$headline = '<a href="'.DIR.'topic/'.$reply->parent_id.'">' . $headline . '</a>';
 		if($query_pos !== false) {
 			$snippet = preg_replace('/(' . $search_query_p . ')/i', '<em class="marked">$1</em>', $snippet);
 		}
