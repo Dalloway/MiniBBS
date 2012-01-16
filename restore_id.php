@@ -20,7 +20,8 @@ else if ( ! empty($_GET['UID']) && ! empty($_GET['password'])) {
 }
 // ...or a memorable name was inputted.
 else if ( ! empty($_POST['memorable_name'])) {
-	$res = $db->q('SELECT user_settings.uid, users.password FROM user_settings INNER JOIN users ON user_settings.uid = users.uid WHERE LOWER(user_settings.memorable_name) = LOWER(?) AND user_settings.memorable_password = ?', $_POST['memorable_name'], hash_password($_POST['memorable_password']));
+	$password_hash = ($_POST['memorable_password'] === '' ? '' : hash_password($_POST['memorable_password']));
+	$res = $db->q('SELECT user_settings.uid, users.password FROM user_settings INNER JOIN users ON user_settings.uid = users.uid WHERE LOWER(user_settings.memorable_name) = LOWER(?) AND user_settings.memorable_password = ?', $_POST['memorable_name'], $password_hash);
 	list($uid, $password) = $res->fetch();
 	if (empty($uid)) {
 			error::add('Your memorable information was incorrect.');
