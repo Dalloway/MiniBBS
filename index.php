@@ -2,11 +2,7 @@
 require './includes/bootstrap.php';
 
 /* Should we sort by topic creation date or last bump? */
-if($_GET['topics'] || ($_SESSION['settings']['topics_mode'] && ! $_GET['bumps']) ) {
-	$topics_mode = true;
-} else {
-	$topics_mode = false;
-}
+$topics_mode = ! empty($_GET['topics']) || ($_SESSION['settings']['topics_mode'] && empty($_GET['bumps']));
 
 /* Handle pagination */
 $page = new Paginate();
@@ -25,11 +21,11 @@ if ($page->current === 1) {
 }
 
 /* Update the last_bump and last_topic cookies. These control both the last seen marker and the exclamation mark in main menu. */
-if($_COOKIE['last_bump'] <= $last_actions['last_bump']) {
+if( ! isset($_COOKIE['last_bump']) || $_COOKIE['last_bump'] <= $last_actions['last_bump']) {
 	setcookie('last_bump', $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'] + 315569260, '/');
 	$_COOKIE['last_bump'] = $_SERVER['REQUEST_TIME'];
 }
-if($_COOKIE['last_topic'] <= $last_actions['last_topic']) {
+if( ! isset($_COOKIE['last_topic']) || $_COOKIE['last_topic'] <= $last_actions['last_topic']) {
 	setcookie('last_topic', $_SERVER['REQUEST_TIME'], $_SERVER['REQUEST_TIME'] + 315569260, '/');
 	$_COOKIE['last_topic'] = $_SERVER['REQUEST_TIME'];
 }
