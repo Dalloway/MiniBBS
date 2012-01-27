@@ -1,4 +1,73 @@
 <?php
+/* Check that PHP has write-permission for needed directories, and die if not. */
+$unwritable_dirs = array
+(
+	'img', 'thumbs',
+	'cache', 'config'
+);
+
+foreach($unwritable_dirs as $key => $dir) {
+	if(is_writable(realpath(dirname(__FILE__)) . '/' . $dir)) {
+		unset($unwritable_dirs[$key]);
+	}
+}
+
+if( ! empty($unwritable_dirs)):
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Permission error</title>
+	
+	<style type="text/css">
+	body {
+		padding:3% 4%;
+		background-color:#FFBCCD;
+		color:#000;
+		font-family: Arial;
+	}
+	
+	#wrapper {
+		max-width: 1000px;
+		padding:.5% 2em;
+		margin:auto;
+		background-color:#fff;
+		border-radius:1em;
+	}
+	
+	h1 {
+		text-align: center;
+		font-family:georgia;
+	}
+
+	li {
+		color:#B75461;
+	}
+	</style>
+</head>
+
+<body>
+<div id="wrapper">
+	<h1>Permission required</h1>
+	
+	<p>To install MiniBBS, PHP must have write-access to the following directories:</p>
+	<ul>
+	<?php foreach($unwritable_dirs as $dir): ?>
+		<li>/<?php echo $dir ?>/</li>
+	<?php endforeach ?>
+	</ul>
+	
+	<p>Before installation can continue, you must chmod each of these directories to <kbd>777</kbd> (<kbd>0777</kbd>) — using either your FTP client (Google for help) or the <kbd>chmod</kbd> shell command.</p>
+</div>
+</body>
+</html>
+
+<?php
+	exit();
+endif;
+
 /* Schema */
 $tables = array();
 
@@ -99,6 +168,7 @@ $tables['groups'] = "CREATE TABLE IF NOT EXISTS `groups` (
   `manage_permissions` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `merge` TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
   `manage_messages` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0',
+  `hide_log` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;";
@@ -122,6 +192,7 @@ $tables['images'] = "CREATE TABLE IF NOT EXISTS `images` (
   `md5` varchar(32) NOT NULL,
   `topic_id` int(10) unsigned DEFAULT NULL,
   `reply_id` int(10) unsigned DEFAULT NULL,
+  `deleted` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0',
   UNIQUE KEY `reply_id` (`reply_id`),
   UNIQUE KEY `topic_id` (`topic_id`),
   KEY `md5` (`md5`)
@@ -133,7 +204,7 @@ $tables['last_actions'] = "CREATE TABLE IF NOT EXISTS `last_actions` (
   PRIMARY KEY (`feature`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
 
-$tables['messages'] = "CREATE TABLE `messages` (
+$tables['messages'] = "CREATE TABLE IF NOT EXISTS `messages` (
   `key` VARCHAR( 255 ) NOT NULL ,
   `message` TEXT NOT NULL ,
   PRIMARY KEY ( `key` )
@@ -149,6 +220,7 @@ $tables['mod_actions'] = "CREATE TABLE IF NOT EXISTS `mod_actions` (
   `time` int(10) unsigned NOT NULL,
   `reason` text NOT NULL,
   `param` text NOT NULL,
+  `hidden` TINYINT( 1 ) UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `action` (`action`),
   KEY `type` (`type`)
@@ -279,7 +351,6 @@ $tables['topics'] = "CREATE TABLE IF NOT EXISTS `topics` (
   `sticky` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `locked` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `poll` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `poll_votes` int(11) unsigned NOT NULL DEFAULT '0',
   `poll_hide` tinyint(1) unsigned DEFAULT '0',
   `imgur` varchar(10) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -305,20 +376,20 @@ $tables['users'] = "CREATE TABLE IF NOT EXISTS `users` (
 
 $tables['user_settings'] = "CREATE TABLE IF NOT EXISTS `user_settings` (
   `uid` char(23) NOT NULL,
-  `memorable_name` varchar(100) NOT NULL,
-  `memorable_password` varchar(128) NOT NULL,
-  `email` varchar(100) NOT NULL,
-  `spoiler_mode` tinyint(1) NOT NULL DEFAULT '0',
-  `snippet_length` smallint(3) unsigned NOT NULL DEFAULT '80',
-  `posts_per_page` int(5) unsigned NOT NULL DEFAULT '0',
-  `topics_mode` tinyint(1) unsigned NOT NULL,
-  `ostrich_mode` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `style` varchar(18) NOT NULL DEFAULT 'mint',
-  `ajax_mode` tinyint(1) unsigned NOT NULL,
-  `celebrity_mode` smallint(1) unsigned NOT NULL DEFAULT '0',
-  `text_mode` smallint(1) unsigned NOT NULL DEFAULT '0',
-  `custom_style` INT( 8 ) UNSIGNED NOT NULL DEFAULT '0',
-  `custom_menu` text NOT NULL,
+  `memorable_name` varchar(100) DEFAULT NULL,
+  `memorable_password` varchar(128) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `spoiler_mode` tinyint(1) DEFAULT NULL,
+  `snippet_length` smallint(3) unsigned DEFAULT NULL,
+  `posts_per_page` int(5) unsigned DEFAULT NULL,
+  `topics_mode` tinyint(1) unsigned DEFAULT NULL,
+  `ostrich_mode` tinyint(1) unsigned DEFAULT NULL,
+  `style` varchar(18) DEFAULT NULL,
+  `ajax_mode` tinyint(1) unsigned DEFAULT NULL,
+  `celebrity_mode` smallint(1) unsigned DEFAULT NULL,
+  `text_mode` smallint(1) unsigned DEFAULT NULL,
+  `custom_style` INT( 8 ) UNSIGNED DEFAULT NULL,
+  `custom_menu` text DEFAULT NULL,
   PRIMARY KEY (`uid`),
   KEY `memorable_name` (`memorable_name`),
   KEY `email` (`email`)
@@ -460,10 +531,10 @@ if(isset($_POST['form_sent'])) {
 		$db->query
 		(
 			"INSERT IGNORE INTO `groups` 
-			(`id`, `name`, `link`, `edit_limit`, `post_reply`, `post_topic`, `post_image`, `post_link`, `pm_users`, `pm_mods`, `read_mod_pms`, `read_admin_pms`, `report`, `handle_reports`, `delete`, `undelete`, `edit`, `edit_others`, `view_profile`, `ban`, `stick`, `lock`, `delete_ip_ids`, `nuke_id`, `nuke_ip`, `exterminate`, `cms`, `bulletin`, `defcon`, `defcon_all`, `delete_all_pms`, `admin_dashboard`, `manage_permissions`, `merge`, `limit_ip`, `limit_ip_max`, `manage_messages`) VALUES
-			(1, 'user', '', 600, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0),
-			(2, 'mod', 'mod', 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 35, 0),
-			(3, 'admin', 'admin', 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1)"
+			(`id`, `name`, `link`, `edit_limit`, `post_reply`, `post_topic`, `post_image`, `post_link`, `pm_users`, `pm_mods`, `read_mod_pms`, `read_admin_pms`, `report`, `handle_reports`, `delete`, `undelete`, `edit`, `edit_others`, `view_profile`, `ban`, `stick`, `lock`, `delete_ip_ids`, `nuke_id`, `nuke_ip`, `exterminate`, `cms`, `bulletin`, `defcon`, `defcon_all`, `delete_all_pms`, `admin_dashboard`, `manage_permissions`, `merge`, `limit_ip`, `limit_ip_max`, `manage_messages`, `hide_log`) VALUES
+			(" . Permission::USER_GROUP . ", 'user', '', 600, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0),
+			(" . Permission::MOD_GROUP . ", 'mod', 'mod', 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 35, 0, 1),
+			(" . Permission::ADMIN_GROUP . ", 'admin', 'admin', 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1)"
 		) or error::add('Failed to create user groups.');
 		/* Set admin privs */
 		$db->query

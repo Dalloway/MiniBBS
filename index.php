@@ -98,16 +98,16 @@ $table->add_td_class(1, 'snippet');
 
 $order_by = ($topics_mode) ? 'id' : 'last_post';
 
-$db->select('topics.id, topics.time, topics.replies, topics.visits, topics.headline, topics.body, topics.last_post, topics.locked, topics.sticky, topics.poll, topics.namefag, topics.tripfag')
-   ->from('topics')
-   ->where("deleted = '0'")
-   ->order_by('sticky DESC, ' . $order_by . ' DESC')
+$db->select('t.id, t.time, t.replies, t.visits, t.headline, t.body, t.last_post, t.locked, t.sticky, t.poll, t.namefag, t.tripfag')
+   ->from('topics t')
+   ->where("t.deleted = '0'")
+   ->order_by('t.sticky DESC, t.' . $order_by . ' DESC')
    ->limit($page->offset, $page->limit);
 if($notifications['citations']) {
 	/* A temporary solution for emphasizing topics with replies-to-your-replies */
 	$db->select('citations.topic AS citation')
 	   ->distinct()
-	   ->join('citations', '(citations.uid = ' . $db->quote($_SESSION['UID']) . ' AND citations.topic = topics.id)');
+	   ->join('citations', '(citations.uid = ' . $db->quote($_SESSION['UID']) . ' AND citations.topic = t.id)');
 }
 $res = $db->exec();
 

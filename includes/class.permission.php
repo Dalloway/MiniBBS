@@ -34,6 +34,11 @@ class Permission {
 	/* The group ID to which the current user belongs */
 	private $current_group = 1;
 	
+	/* The IDs (from the groups table) of the default user groups. */
+	const USER_GROUP  = 1;
+	const MOD_GROUP   = 2;
+	const ADMIN_GROUP = 3;
+	
 	/* Fetches a list of groups, group users and bans from either the cache or the database */
 	public function __construct() {
 		global $db;
@@ -55,8 +60,8 @@ class Permission {
 		$this->groups = $groups;
 		
 		/* Sanity check: The first row of the groups table should always be the basic user group, since it's default. */
-		if($this->groups[1]['name'] != 'user') {
-			trigger_error('The default user group (group ID #1) should be named "user" in the database (not "'.htmlspecialchars($this->groups[1]['name']).'").', E_USER_ERROR);
+		if($this->groups[self::USER_GROUP]['name'] != 'user') {
+			throw new Exception('The default user group (group ID #' . self::USER_GROUP . ') should be named "user" in the database (not "'.htmlspecialchars($this->groups[self::USER_GROUP]['name']).'").', E_USER_ERROR);
 		}
 		
 		$bans = cache::fetch('bans');
@@ -75,6 +80,7 @@ class Permission {
 					$min_ip = ip2long($subnet);
 					/* Convert suffix to netmask */
 					$min_ip &= ~(( 1 << (32 - $suffix)) - 1);
+					/* Add the number of IPs in our range */
 					$max_ip = $min_ip + pow(2, 32 - $suffix) - 1;
 					
 					$bans['range'][$cidr] = array($min_ip, $max_ip);
@@ -103,7 +109,7 @@ class Permission {
 	public function set_group() {
 		if(empty($_SESSION['UID']) || ! array_key_exists($_SESSION['UID'], $this->group_users)) {
 			/* Default -- just a lowly user. */
-			$this->current_group = 1;
+			$this->current_group = self::USER_GROUP;
 		} else {
 			$this->current_group = $this->group_users[$_SESSION['UID']]['group_id'];
 		}
@@ -114,7 +120,7 @@ class Permission {
 		if($uid == null) {
 			$group = $this->current_group;
 		} else {
-			$group = (isset($this->group_users[$uid]) ? $this->group_users[$uid]['group_id'] : 1);
+			$group = (isset($this->group_users[$uid]) ? $this->group_users[$uid]['group_id'] : self::USER_GROUP);
 		}
 		return $this->groups[$group][$setting];
 	}
@@ -155,7 +161,7 @@ class Permission {
 	/* Checks admin status for either $uid (if set) or the current user */
 	public function is_admin($uid = null) {
 		$uid = (is_null($uid) ? $_SESSION['UID'] : $uid);
-		if(isset($this->group_users[$uid]) && $this->group_users[$uid]['group_id'] == 3) {
+		if(isset($this->group_users[$uid]) && $this->group_users[$uid]['group_id'] == self::ADMIN_GROUP) {
 			return true;
 		}
 		return false;
@@ -164,7 +170,7 @@ class Permission {
 	/* Checks mod status for either $uid (if set) or the current user */
 	public function is_mod($uid = null) {
 		$uid = (is_null($uid) ? $_SESSION['UID'] : $uid);
-		if(isset($this->group_users[$uid]) && $this->group_users[$uid]['group_id'] == 2) {
+		if(isset($this->group_users[$uid]) && $this->group_users[$uid]['group_id'] == self::MOD_GROUP) {
 			return true;
 		}
 		return false;

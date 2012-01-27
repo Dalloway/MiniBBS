@@ -1,4 +1,5 @@
 *.cache.php
 favicon.png
+image_gallery.php
 /includes/config.php
 /config/config.php

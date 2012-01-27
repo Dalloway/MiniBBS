@@ -5,7 +5,9 @@ require './includes/bootstrap.php';
 force_id();
 
 $page = new Paginate();
-$template->title = ($_GET['outbox'] ? 'Outbox' : 'Inbox');
+$outbox = ! empty($_GET['outbox']);
+$ignorebox = ! empty($_GET['ignored']);
+$template->title = ($outbox ? 'Outbox' : 'Inbox');
 if ($page->current > 1) {
 	$template->title   .= ', page #' . number_format($page->current);
 }
@@ -15,7 +17,7 @@ $res = $db->q('SELECT 1 FROM pm_ignorelist WHERE uid = ? and ignored_uid = \'*\'
 $ignoring_all_users = (bool) $res->fetchColumn();
 
 // Check for ignored PMs.
-if( ! $_GET['ignored']) {
+if( ! $ignorebox) {
 	$res = $db->q('SELECT COUNT(*) FROM private_messages WHERE ignored = 1 AND destination = ?', $_SESSION['UID']);
 	$num_ignored = $res->fetchColumn();
 } else {
@@ -24,9 +26,9 @@ if( ! $_GET['ignored']) {
 
 $db->select('`id`, `parent`, `source`, `destination`, `contents`, `time`, `name`, `trip`')
    ->from('private_messages');
-if($_GET['outbox']) {
+if($outbox) {
 	$db->where('`source` = ?', $_SESSION['UID']);
-} else if($_GET['ignored']) {
+} else if($ignorebox) {
 	$db->where("`ignored` = '1' AND `destination` = ?", $_SESSION['UID']);
 } else if($perm->get('read_admin_pms')) {
 	$db->where("`ignored` = '0' AND (`destination` = ? OR `destination` = 'mods' OR `destination` = 'admins')", $_SESSION['UID']);
@@ -42,7 +44,7 @@ $res = $db->exec();
 
 // Print the table.
 $columns = array(
-	($_GET['outbox'] ? 'Recipient' : 'Author'),
+	($outbox ? 'Recipient' : 'Author'),
 	'Snippet',
 	'Age ▼'
 );
@@ -56,7 +58,7 @@ while( $pm = $res->fetchObject() ) {
 	$values = array();
 
 	// If we're using the outbox, determine what should be in the "Recipient" field.
-	if($_GET['outbox']) {
+	if($outbox) {
 		if($pm->destination == 'mods' || $pm->destination == 'admins') {
 			$author = ucfirst($pm->destination);
 		} else if($perm->get('view_profile')) {
@@ -92,17 +94,17 @@ while( $pm = $res->fetchObject() ) {
 	<li><a href="<?php echo DIR; ?>compose_message/mods">Mod PM</a></li>
 	<li><a href="<?php echo DIR; ?>compose_message/admins">Admin PM</a></li>
 <?php 
-	if($_GET['ignored'] || $_GET['outbox']): 
+	if($ignorebox || $outbox): 
 ?>
 	<li><a href="<?php echo DIR; ?>private_messages">Inbox</a></li>
 <?php 
 	endif; 
-	if( ! $_GET['outbox']): 
+	if( ! $outbox): 
 ?>
 	<li><a href="<?php echo DIR; ?>outbox">Outbox</a></li>
 <?php 
 	endif; 
-	if( ! $_GET['ignored'] && $num_ignored > 0): 
+	if( ! $ignorebox && $num_ignored > 0): 
 ?>
 	<li><a href="<?php echo DIR; ?>ignored_PMs">Show ignored PMs</a> (<?php echo $num_ignored ?>)</li>
 <?php 
@@ -120,6 +122,6 @@ while( $pm = $res->fetchObject() ) {
 </ul>
 <?php
 $pms->output('(No PMs to display.)');
-$page->navigation('private_messages', $pms->row_count);
+$page->navigation($outbox ? 'outbox' : 'private_messages', $pms->row_count);
 $template->render();
 ?>

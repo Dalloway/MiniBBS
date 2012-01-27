@@ -1,13 +1,12 @@
 <?php
 require './includes/bootstrap.php';
-/* Contains $messages -- default messages */
-require SITE_ROOT . '/lang/en.php';
-
 $template->title = 'Message manager';
 
 if( ! $perm->get('manage_messages')) {
 	error::fatal(m('Error: Access denied'));
 }
+
+$messages = $lang->get_default_messages();
 
 ?>
 

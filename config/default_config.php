@@ -59,7 +59,8 @@ $config_defaults = array
 	'AUTOLOCK' => '0',
 	'IMGUR_KEY' => '',
 	'SIGNATURES' => '1',
-	'FORCED_ANON' => '0'
+	'FORCED_ANON' => '0',
+	'LANGUAGE' => 'en'
 );
 
 ?>

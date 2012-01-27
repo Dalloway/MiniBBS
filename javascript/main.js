@@ -61,7 +61,7 @@ function quickReply(id, content) {
 	textarea.value += '@' + addCommas(id) + '\r\n';
 	
 	if(content !== undefined) {
-		textarea.value += decodeURIComponent(content.replace(/\+/g, '%20')) + "\r\n\r\n" ;
+		textarea.value += decodeURIComponent(content) + "\r\n\r\n" ;
 	}
 	
 	textarea.scrollIntoView(true);

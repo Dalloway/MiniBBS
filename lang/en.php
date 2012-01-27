@@ -1,6 +1,19 @@
 <?php
 
-/* The default message file. Instead of editing this, use the message manager. See /includes/class.language.php for further documentation. */
+/**
+ * This file contains the default text for MiniBBS's interface. Unless you're developing MiniBBS, don't
+ * edit this file. Instead, use the message manager linked on the Stuff page. If you do edit this file for
+ * a live board, the changes won't show immediately due to caching.
+ *
+ * MiniBBS is currently available only in English. To add another language to MiniBBS, create a copy of this file 
+ * as /lang/xx.php, where xx is your language's ISO 639-1 language code, and then translate the values in $messages 
+ * (leaving the keys untouched). You can then switch to the language from the admin dashboard. (Please contact
+ * me (MiniBBS.org) if you do decide to translate!)
+ *
+ * (This file is still very far from completion -- only a fraction of the interface is currently translatable!) 
+ *
+ * For syntax documentation, etc., see /includes/class.language.php or the message manager. 
+ */
 
 $messages = array (
 
@@ -31,6 +44,9 @@ $messages = array (
 'Search: Help'              => 'The search is not keyword-based; you must type an exact phrase.',
 'Search: No results'        => '(No matches. Sorry.)',
 'System'                    => '<em>System</em>',
+'Topic: (OP)'               => '(OP)',
+'Topic: (OP, you)'          => '(OP, you)',
+'Topic: (you)'              => '(you)',
 'Watchlist: No results'     => 'You haven\'t watched any topics yet. Once you do, you can keep track of their latest replies here.',
 
 );

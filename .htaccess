@@ -119,6 +119,8 @@ RewriteRule ^undo_merge/?([0-9]+)$ action.php?action=undo_merge&id=$1 [L]
 RewriteRule ^revert_change/?([0-9]+)$ action.php?action=revert_change&id=$1 [L]
 RewriteRule ^message_manager$ message_manager.php [L]
 RewriteRule ^edit_message/(.+)$ message_edit.php?key=$1 [L]
+RewriteRule ^hide_log/?([0-9]+)$ action.php?action=hide_log&id=$1 [L]
+RewriteRule ^unhide_log/?([0-9]+)$ action.php?action=unhide_log&id=$1 [L]
 
 # Content management.
 RewriteRule ^CMS$ cms.php [L]
@@ -129,7 +131,7 @@ RewriteRule ^undelete_page/([0-9]+)$ action.php?action=undelete_page&id=$1 [L]
 
 # Private messages.
 RewriteRule ^private_messages/?([0-9]+)?$ pm_inbox.php?p=$1 [L]
-RewriteRule ^outbox$ pm_inbox.php?outbox=1 [L]
+RewriteRule ^outbox/?([0-9]+)?$ pm_inbox.php?outbox=1&p=$1 [L]
 RewriteRule ^private_message/([0-9]+)$ pm.php?id=$1 [L]
 RewriteRule ^reply_to_message/([0-9]+)$ pm_compose.php?replyto=$1 [L]
 RewriteRule ^contact_OP/([0-9]+)$ pm_compose.php?topic=$1 [L]

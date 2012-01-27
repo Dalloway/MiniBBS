@@ -99,12 +99,12 @@ class Database extends PDO {
 		if( ! empty($this->sql['order_by'])) {
 			$query .= ' ORDER BY ' . implode(',', $this->sql['order_by']); 
 		}
-		if( ! is_null($this->limit)) {
+		if( ! is_null($this->sql['limit'])) {
 			$query .= ' LIMIT ';
-			if( ! is_null($this->offset)) {
-				$query .= (int) $this->offset . ', ';
+			if( ! is_null($this->sql['offset'])) {
+				$query .= (int) $this->sql['offset'] . ', ';
 			}
-			$query .= (int) $this->limit;
+			$query .= (int) $this->sql['limit'];
 		}
 		return $query;
 	}
@@ -200,10 +200,10 @@ class Database extends PDO {
 	public function limit(/* ... */) {
 		$args = func_get_args();
 		if(count($args) == 2) {
-			$this->offset = $args[0];
-			$this->limit = $args[1];
+			$this->sql['offset'] = $args[0];
+			$this->sql['limit'] = $args[1];
 		} else {
-			$this->limit = $args[0];
+			$this->sql['limit'] = $args[0];
 		}
 		
 		return $this;

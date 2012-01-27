@@ -259,6 +259,8 @@ if($perm->get('delete') && $num_topics_fetched + $num_replies_fetched):
 <?php
 endif;
 
+echo '</form>';
+
 $page->navigation('profile/' . $_GET['uid'], $num_replies_fetched);
 
 $fetch_trash = $db->q

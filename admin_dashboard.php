@@ -8,6 +8,8 @@ if( ! $perm->get('admin_dashboard')) {
 	error::fatal(m('Error: Access denied'));
 }
 
+$available_langs = $lang->get_languages();
+
 if(isset($_POST['form_sent'])) {
 	check_token();
 	
@@ -15,6 +17,10 @@ if(isset($_POST['form_sent'])) {
 	if(empty($_POST['form']['DEFAULT_MENU'])) {
 		/* Revert to the real default */
 		$_POST['form']['DEFAULT_MENU'] = $config_defaults['DEFAULT_MENU'];
+	}
+	
+	if( ! in_array($_POST['form']['LANGUAGE'], $available_langs)) {
+		error::add('No language file for "' . htmlspecialchars($_POST['form']['LANGUAGE']) . '" exists.');
 	}
 	
 	if(error::valid()) {
@@ -32,6 +38,10 @@ if(isset($_POST['form_sent'])) {
 			
 			if( ! defined($name) || $_POST['form'][$name] != constant($name)) {
 				$db->q('UPDATE config SET `value` = ? WHERE `name` = ?', $_POST['form'][$name], $name);
+			}
+			
+			if($name === 'LANGUAGE') {
+				cache::clear('lang');
 			}
 		}
 		
@@ -79,6 +89,20 @@ if(isset($_POST['form_sent'])) {
 		
 		<p class="caption">The board's default style.</p>
 	</div>
+	
+	<div>
+		<label class="common" for="LANGUAGE">Language</label>
+		<select id="LANGUAGE" name="form[LANGUAGE]" class="inline">
+        <?php
+		foreach($available_langs as $lang_code) {
+			echo '<option value="'.htmlspecialchars($lang_code).'"' . (LANGUAGE == $lang_code ? ' selected' : '') . '>'.htmlspecialchars($lang_code).'</option>';
+		}
+		?>
+		</select>
+		
+		<p class="caption">The language of the board interface.</p>
+	</div>
+
 	
 	<div>
 		<label class="common" for="MAILER_ADDRESS">Mailer address</label>

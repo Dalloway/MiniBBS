@@ -116,14 +116,20 @@ if(isset($_POST['form_sent'])) {
 				continue;
 			}
 			
-			if( ! isset($_SESSION['custom_settings']) || $new_settings[$option] != $_SESSION['settings'][$option]) {
+			if($new_settings[$option] != $_SESSION['settings'][$option]) {
 				/**
-				 * If $_SESSION['custom_settings'] is unset, this is our first time using the dashboard, so
-				 * every setting must be updated. Otherwise, we'll only update the settings that have changed.
 				 * We use addslashes() because PDO's quote() function adds surrounding quotes; anyway, the option
 				 * names aren't based on user input.
 				 */
-				 $db->q('INSERT INTO user_settings (uid, ' . addslashes($option) . ') VALUES (?, ?) ON DUPLICATE KEY UPDATE ' . addslashes($option) . ' = ?', $_SESSION['UID'], $new_settings[$option], $new_settings[$option]);
+				 $db->q
+				 (
+					'INSERT INTO user_settings 
+						(uid, ' . addslashes($option) . ') VALUES 
+						(?, ?) 
+					ON DUPLICATE KEY 
+						UPDATE ' . addslashes($option) . ' = ?', 
+					$_SESSION['UID'], $new_settings[$option], $new_settings[$option]
+				);
 				 $update_count++;
 			}
 		}
@@ -146,7 +152,7 @@ error::output();
 		<label class="common" for="memorable_password">Memorable password</label>
 		<input type="password" class="inline" id="memorable_password" name="form[memorable_password]" maxlength="100" size="20" /> <?php if(!empty($_SESSION['settings']['memorable_password'])) echo '<em>Set</em>'; ?>
 		
-		<p class="caption">This information can be used to more easily <a href="<?php echo DIR; ?>restore_ID">restore your ID</a>. Password is optional, but recommended.</p>
+		<p class="caption">This information can be used to more easily <a href="<?php echo DIR; ?>restore_ID">restore your ID</a>.</p>
 	</div>
 	
 	<div class="row">

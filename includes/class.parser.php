@@ -18,7 +18,7 @@ class parser {
 		// 05 Strikethrough.
 		'/\[s\](.*?)\[\/s\]/is',
 		// 06 Linkify URLs.
-		'/\b(?<!\[)(https?:\/\/[\@a-z0-9\x21\x23-\x27\x2a-\x2e\x3a\x3b\/;\x3f-\x7a\x7e\x3d]+)/Sxi',
+		'@\b(?<!\[)(https?|ftp)://(www\.)?([A-Z0-9.-]+)(/)?([A-Z0-9/&#+%~=_|?.,!:;-]*[A-Z0-9/&#+%=~_|])?@i',
 		// 07 Linkify text in the form of [http://example.org text].
 		'@\[(https?:\/\/[\@a-z0-9\x21\x23-\x27\x2a-\x2e\x3a\x3b\/;\x3f-\x7a\x7e\x3d]+) (.+?)\]@i',
 		// 08 Quotes.

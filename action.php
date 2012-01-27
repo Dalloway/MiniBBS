@@ -104,7 +104,6 @@ switch($_GET['action']) {
 				$db->q('INSERT INTO poll_votes (uid, ip, parent_id, option_id) VALUES (?, ?, ?, ?)', $_SESSION['UID'], $_SERVER['REMOTE_ADDR'], $id, $option_id);
 				if( ! is_null($option_id)) {
 					$db->q('UPDATE poll_options SET votes = votes + 1 WHERE id = ?', $option_id);
-					$db->q('UPDATE topics SET poll_votes = poll_votes + 1 WHERE id = ?', $id);
 					redirect(m('Notice: Voted'), 'topic/' . $id);
 				} else {
 					redirect(null, 'topic/' . $id);
@@ -830,6 +829,40 @@ switch($_GET['action']) {
 			$db->q("UPDATE topics SET deleted = '1' WHERE author_ip = ?", $id);
 			log_mod('nuke_ip', $id);
 			redirect('All topics and replies by ' . $id . ' have been deleted.', 'IP_address/'.$id);
+		}
+	break;
+	
+	case 'hide_log':
+		if( ! $perm->get('hide_log')) {
+			error::fatal(m('Error: Access denied'));
+		}
+		
+		if( ! ctype_digit($_GET['id'])) {
+			error::fatal('That is not a valid ID.');
+		}
+		
+		$template->title = 'Hide log';
+		
+		if(isset($_POST['confirm'])) {
+			$db->q('UPDATE mod_actions SET hidden = 1 WHERE id = ?', $_GET['id']);
+			redirect('Log hidden.', 'mod_log');
+		}
+	break;
+	
+	case 'unhide_log':
+		if( ! $perm->get('hide_log')) {
+			error::fatal(m('Error: Access denied'));
+		}
+		
+		if( ! ctype_digit($_GET['id'])) {
+			error::fatal('That is not a valid ID.');
+		}
+		
+		$template->title = 'Unhide log';
+		
+		if(isset($_POST['confirm'])) {
+			$db->q('UPDATE mod_actions SET hidden = 0 WHERE id = ?', $_GET['id']);
+			redirect('Log unhidden.', 'mod_log');
 		}
 	break;
 	

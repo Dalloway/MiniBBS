@@ -401,7 +401,7 @@ if (isset($_POST['form_sent'])) {
 				$post_type = ($reply ? 'reply' : 'topic');
 				
 				if($editing) {
-					delete_image($post_type, $edit_id);
+					delete_image($post_type, $edit_id, true);
 					$image_target = $edit_id;
 				} else {
 					$image_target = $inserted_id;

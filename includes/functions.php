@@ -182,29 +182,32 @@ function force_id() {
 }
 
 function load_settings() {
-	global $db, $default_dashboard;
+	global $db;
 	
-	if(isset($_SESSION['UID'])) {
-		$res = $db->q('SELECT * FROM user_settings WHERE uid = ?', $_SESSION['UID']);
-		$settings = $res->fetch(PDO::FETCH_ASSOC);
-		if(isset($settings['uid'])) {
-			unset($settings['uid']);
-			$_SESSION['settings'] = $settings;
-			$_SESSION['custom_settings'] = true;
-			
-			return true;
-		}
-	}
-	
-	/* No settings were in the database; load the defaults. */
+	/* Fetch default settings (always needed in case a custom setting is null) */
 	$settings = array();
+	
 	/* Contains $default_dashboard */
 	require SITE_ROOT . '/config/default_dashboard.php';
 	
 	foreach($default_dashboard as $option => $properties) {
 		$settings[$option] = $properties['default'];
 	}
-	/* This is much faster than writing to $_SESSION in a loop. */
+	
+	/* Fetch custom settings from database */
+	if(isset($_SESSION['UID'])) {
+		$res = $db->q('SELECT * FROM user_settings WHERE uid = ?', $_SESSION['UID']);
+		$custom_settings = $res->fetch(PDO::FETCH_ASSOC);
+		
+		if(is_array($custom_settings)) {
+			/* Unset null values (options that haven't been set by the user) */
+			$custom_settings = array_filter($custom_settings, 'is_string');
+		
+			/* Overwrite default settings */
+			$settings = array_merge($settings, $custom_settings);
+		}
+	}
+
 	$_SESSION['settings'] = $settings;
 }
 
@@ -395,7 +398,12 @@ function format_name($name, $tripcode, $link = null, $poster_number = null, $sho
 }
 
 function number_to_letter($number) {
-	$alphabet = range('A', 'Y');
+	static $alphabet;
+	
+	if( ! isset($alphabet)) {
+		$alphabet = range('A', 'Y');
+	}
+	
 	if($number < 24) {
 		return $alphabet[$number];
 	}
@@ -462,52 +470,11 @@ function page($total_replies, $reply_number = null) {
 		return '';
 	}
 	
-	if( ! isset($reply_number)) {
+	if(empty($reply_number)) {
 		return '/1';
 	}
 	
 	return '/' . ceil($reply_number / $_SESSION['settings']['posts_per_page']);
-}
-
-/* Prints a linked list of pages for the current topic. */
-function topic_pages($reply_count) {
-	if($_SESSION['settings']['posts_per_page'] && isset($_GET['page']) && $reply_count > $_SESSION['settings']['posts_per_page']) {
-		$topic = (int) $_GET['id'];
-		$pages = ceil($reply_count / $_SESSION['settings']['posts_per_page']);
-		echo '<div class="topic_pages">';
-		if($_GET['page'] > 1) {
-			$prev = $_GET['page'] - 1;
-			echo '<span class="topic_page"><a href="'.DIR.'topic/'.$topic.'/'.$prev.'">«</a></span>';
-		}
-		for($i = 1; $i <= $pages; ++$i) {
-			if($i == $_GET['page']) {
-				echo '<span class="topic_page current_page">' . number_format($i) . '</span> ';
-			} else {
-				echo '<span class="topic_page"><a href="'.DIR.'topic/'.$topic. '/' .$i.'">' . number_format($i) . '</a></span> ';
-			}
-		}
-		if($_GET['page'] < $pages) {
-			$next = $_GET['page'] + 1;
-			echo '<span class="topic_page"><a href="'.DIR.'topic/'.$topic.'/'.$next.'">»</a></span>';
-		}
-		echo '<span class="topic_page all_pages"><a href="'.DIR.'topic/'.$topic.'">All</a></span></div>';
-	}
-}
-
-function edited_message($original_time, $edit_time, $edit_mod) {
-	if($edit_time) {
-		echo '<p class="unimportant">(Edited ' . age($original_time, $edit_time) . ' later';
-		if($edit_mod) {
-			echo ' by a moderator';
-		}
-		echo '.)</p>';
-	}
-}
-
-function encode_quote($body) {
-	$body = trim(preg_replace('/^@([0-9,]+|OP)/m', '', $body));
-	$body = preg_replace('/^/m', '> ', $body);
-	return urlencode($body);
 }
 
 // To redirect to index, use redirect($notice, ''). To redirect back to referrer, 
@@ -640,7 +607,7 @@ function delete_reply($id, $notify = true) {
 }
 
 /* Removes an image from the database, and, if no other posts use it, from the file system */
-function delete_image($mode = 'reply', $post_id) {
+function delete_image($mode = 'reply', $post_id, $hard_delete = false) {
 	global $db;
 	
 	if($mode != 'reply' && $mode != 'topic') {
@@ -659,7 +626,12 @@ function delete_image($mode = 'reply', $post_id) {
 				unlink(SITE_ROOT . '/thumbs/' . $img_filename);
 			}
 		}
-		$db->q('DELETE FROM images WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
+		
+		if($hard_delete) {
+			$db->q('DELETE FROM images WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
+		} else {
+			$db->q('UPDATE images SET deleted = 1 WHERE '.$mode.'_id = ? AND file_name = ? LIMIT 1', $post_id, $img_filename);
+		}
 	}
 }
 

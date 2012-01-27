@@ -17,23 +17,23 @@ spl_autoload_register('load_class');
 set_error_handler(array('error', 'error_handler'));
 set_exception_handler(array('error', 'exception_handler'));
 
-/* Globally required classes. Do not re-order. */
 $template = new Template($script_start);
-$db       = new Database($db_info['username'], $db_info['password'], $db_info['server'], $db_info['database']);
-$lang     = new Language();
-$perm     = new Permission();
+$db = new Database($db_info['username'], $db_info['password'], $db_info['server'], $db_info['database']);
 
 /* Define configuration values */
 $config = cache::fetch('config');
 if($config === false) {
 	$res = $db->q('SELECT name, value FROM config');
-	$config = array_map('reset', array_map('reset', $res->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_ASSOC)));
+	$config = array_map('reset', $res->fetchAll(PDO::FETCH_COLUMN|PDO::FETCH_GROUP));
 	cache::set('config', $config);
 }
 foreach($config as $name => $value) {
 	define($name, $value);
 }
 unset($config);
+
+$lang = new Language(LANGUAGE);
+$perm = new Permission();
 
 /* If the calling file defines MINIMAL_BOOTSTRAP as true, we'll skip a few checks. */
 defined('MINIMAL_BOOTSTRAP') or define('MINIMAL_BOOTSTRAP', false);

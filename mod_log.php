@@ -76,25 +76,29 @@ $searchable_types = array
 	</select>
 	
 	<label class="inline help" title="For example, an IP address or topic ID.">Target:</label>
-	<input type="text" name="target" class="inline" value="<?php echo htmlspecialchars($_REQUEST['target']) ?>" />
+	<input type="text" name="target" class="inline" value="<?php if(isset($_REQUEST['target'])) echo htmlspecialchars($_REQUEST['target']) ?>" />
 	
 	<input type="submit" value="Search" class="inline" />
 	</form>
 </fieldset>
 <?php
-$db->select('id, action, target, reason, param, mod_uid, time')->from('mod_actions');
+$db
+ ->select('m.id, m.action, m.target, m.reason, m.param, m.mod_uid, m.time, m.hidden, t.headline, r.body')
+ ->from('mod_actions m')
+ ->join('topics t', "m.action = 'delete_topic' AND m.target = t.id")
+ ->join('replies r', "m.action = 'delete_reply' AND m.target = r.id");
 if( ! empty($_REQUEST['log_type']) && isset($searchable_types[$_REQUEST['log_type']])) {
-	$db->where('type = ?', $_REQUEST['log_type']);
+	$db->where('m.type = ?', $_REQUEST['log_type']);
 }
 if( ! empty($_REQUEST['mod']) && ($mod_id = $perm->get_uid($_REQUEST['mod']))) {
-	$db->where('mod_uid = ?', $mod_id);
+	$db->where('m.mod_uid = ?', $mod_id);
 }
 if( ! empty($_REQUEST['target']) and strlen($_REQUEST['target']) < 60) {
 	/* Filter out anything not a dot or alphanumeric */
 	$log->target = preg_replace('|[^0-9a-z\.]|', '', $_REQUEST['target']);
-	$db->where('target = ?', $log->target);
+	$db->where('m.target = ?', $log->target);
 }
-$res = $db->order_by('time DESC')->limit($page->offset, $page->limit)->exec();
+$res = $db->order_by('m.time DESC')->limit($page->offset, $page->limit)->exec();
 
 $columns = array
 (
@@ -112,7 +116,7 @@ function censor_ip($ip) {
 
 while( $log = $res->fetchObject() ) {
 	$undo = '';
-
+	
 	if($log->mod_uid === 'system') {
 		$mod_name = m('System');
 	} else {
@@ -316,8 +320,10 @@ while( $log = $res->fetchObject() ) {
 			if($perm->get('undelete')) {
 				$action = 'Deleted <a href="'.DIR.'topic/'.$log->target.'">a topic</a>';
 			} else {
-				$action = 'Deleted a topic (#'.number_format((int)$log->target).')';
+				$action = 'Deleted topic #'.number_format((int)$log->target);
 			}
+			
+			$action .= ' ("' . htmlspecialchars($log->headline) . '")';
 			
 			$log->param = trim($log->param);
 			if(empty($log->param)) {
@@ -335,8 +341,10 @@ while( $log = $res->fetchObject() ) {
 			if($perm->get('undelete')) {
 				$action = 'Deleted <a href="'.DIR.'reply/'.$log->target.'">a reply</a>';
 			} else {
-				$action = 'Deleted a reply (#'.number_format((int)$log->target).')';
+				$action = 'Deleted reply #'.number_format((int)$log->target);
 			}
+			
+			$action .= ' ("' . parser::snippet($log->body) . '")';
 			
 			$log->param = trim($log->param);
 			if(empty($log->param)) {
@@ -476,9 +484,20 @@ while( $log = $res->fetchObject() ) {
 	if( ! empty($log->reason)) {
 		$action .= ' Reason: "' . htmlspecialchars($log->reason) . '".';
 	}
+		
+	if($perm->get('hide_log')) {
+		if($log->hidden) {
+			$undo .= ' [<a href="'.DIR.'unhide_log/'.$log->id.'" onclick="return quickAction(this, \'Really unhide that log?\');">unhide</a>] ';
+			$action .= ' <em>(Hidden.)</em>';
+		} else {
+			$undo .= ' [<a href="'.DIR.'hide_log/'.$log->id.'" onclick="return quickAction(this, \'Really hide that log from unprivileged users?\');">hide</a>] ';
+		}
+	} else if($log->hidden) {
+		$action = '<em>(Hidden.)</em>';
+	}
 	
 	if($log->mod_uid === $_SESSION['UID']) {
-		$undo .= ' <a href="' . DIR . 'edit_reason/' . $log->id . '" onclick="return editReason(this, \'' . rawurlencode($log->reason) . '\', \'' . $_SESSION['token'] . '\')" title="Edit reason" class="help mod_edit">[+]</a>';
+		$undo = '<a href="' . DIR . 'edit_reason/' . $log->id . '" onclick="return editReason(this, \'' . rawurlencode($log->reason) . '\', \'' . $_SESSION['token'] . '\')" title="Edit reason" class="help mod_edit">[+]</a> ' . $undo;
 	}
 	
 	if( ! empty($undo)) {
