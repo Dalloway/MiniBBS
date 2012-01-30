@@ -164,7 +164,7 @@ if (isset($_POST['form_sent'])) {
 		check_token();
 		
 		$min_body = MIN_LENGTH_BODY;
-		if( ! empty($_FILES['image']['name']) || ! empty($_POST['imgur'])) {
+		if( ! empty($_FILES['image']['name']) || ! empty($_POST['imgur']) || $editing) {
 			$min_body = 0;
 		}
 		

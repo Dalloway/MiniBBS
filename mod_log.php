@@ -490,7 +490,7 @@ while( $log = $res->fetchObject() ) {
 			$undo .= ' [<a href="'.DIR.'unhide_log/'.$log->id.'" onclick="return quickAction(this, \'Really unhide that log?\');">unhide</a>] ';
 			$action .= ' <em>(Hidden.)</em>';
 		} else {
-			$undo .= ' [<a href="'.DIR.'hide_log/'.$log->id.'" onclick="return quickAction(this, \'Really hide that log from unprivileged users?\');">hide</a>] ';
+			$undo .= ' [<a href="'.DIR.'hide_log/'.$log->id.'" onclick="return quickAction(this, \'Really hide the log summary from unprivileged users?\');">hide</a>] ';
 		}
 	} else if($log->hidden) {
 		$action = '<em>(Hidden.)</em>';

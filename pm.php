@@ -117,7 +117,17 @@ do {
 ?>
 
 			<ul class="menu">
+<?php
+			if($pm->ignored && $_SESSION['UID'] == $pm->destination):
+?>
+				<li><a href="<?php echo DIR ?>unignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really stop ignoring PMs from this user?');">Unignore</a></li>
 <?php 
+			elseif($pm->destination == $_SESSION['UID'] && $pm->source != 'system'): 
+?>
+				<li><a href="<?php echo DIR ?>ignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really ignore all future PMs from this user?');">Ignore</a></li>
+<?php 
+			endif; 
+			
 			if($perm->get('view_profile') && $pm->source != 'system'): 
 ?>
 				<li><a href="<?php echo DIR ?>profile/<?php echo $pm->source ?>">Profile</a></li>
@@ -137,15 +147,6 @@ do {
 				<li><a href="<?php echo DIR ?>dismiss_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really dismiss this PM?');">Dismiss</a></li>
 <?php 
 			endif;
-			if($pm->ignored && $_SESSION['UID'] == $pm->destination):
-?>
-				<li><a href="<?php echo DIR ?>unignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really stop ignoring PMs from this user?');">Unignore</a></li>
-<?php 
-			elseif($pm->destination == $_SESSION['UID'] && $pm->source != 'system'): 
-?>
-				<li><a href="<?php echo DIR ?>ignore_PM/<?php echo $pm->id ?>" onclick="return quickAction(this, 'Really ignore all future PMs from this user?');">Ignore</a></li>
-<?php 
-			endif; 
 ?>
 			</ul>
 		</td>

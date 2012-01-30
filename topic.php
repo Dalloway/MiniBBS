@@ -80,7 +80,7 @@ if($topic->page < 2):
 	if($OP->image_deleted):
 ?>
 	<p class="unimportant">
-	(<strong><?php echo htmlspecialchars($OP->original_name) ?></strong> was deleted<?php if(!empty($OP->image_deleted_by)): ?> <?php echo age($OP->image_deleted_at, $OP->time) ?> later by <?php echo htmlspecialchars($perm->get_name($OP->image_deleted_by)); endif ?>. <?php if(!empty($OP->image_delete_reason)): ?>Reason: <?php echo htmlspecialchars($OP->image_delete_reason); endif ?>)
+	(<strong><?php echo htmlspecialchars($OP->original_name) ?></strong> was deleted<?php if(!empty($OP->image_deleted_by)): ?> <?php echo age($OP->image_deleted_at, $OP->time) ?> later by <?php echo htmlspecialchars($perm->get_name($OP->image_deleted_by)); endif ?>.<?php if(!empty($OP->image_delete_reason)): ?> Reason: <?php echo htmlspecialchars($OP->image_delete_reason); endif ?>)
 	</p>
 
 <?php
@@ -236,7 +236,7 @@ if( ! empty($topic->poll_options)) {
 	}
 	
 	$table->output('(This topic is marked as a poll, but there does not seem to be any options associated with it.)');
-	if( ! $voted) {
+	if( ! $topic->voted) {
 		echo '<div class="row"><input type="submit" name="cast_vote" value="Cast your vote" class="inline" />';
 		if($OP->poll_hide) {
 			echo '<input type="submit" name="show_results" value="Show results" class="inline" />';
