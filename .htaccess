@@ -50,8 +50,8 @@ RewriteRule ^delete_bulletin/([0-9]+)$ action.php?action=delete_bulletin&id=$1 [
 
 # Search.
 RewriteRule ^search$ search.php [L]
-RewriteRule ^search/(.+)$ search.php?q=$1 [L]
 RewriteRule ^search/(.+?)/([0-9]+)?$ search.php?q=$1&p=$2 [L]
+RewriteRule ^search/(.+)$ search.php?q=$1 [L]
 
 # Misc.
 RewriteRule ^dashboard$ dashboard.php [L]
