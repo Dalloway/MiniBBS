@@ -97,7 +97,7 @@ class Upload {
 		}
 		
 		/* Check if an identical image has already been uploaded. */
-		$res = $db->q('SELECT file_name FROM images WHERE md5 = ? LIMIT 1', $this->md5);
+		$res = $db->q('SELECT file_name FROM images WHERE md5 = ? AND deleted = 0 LIMIT 1', $this->md5);
 		$previous_image = $res->fetchColumn();				
 				
 		if ($previous_image) {
