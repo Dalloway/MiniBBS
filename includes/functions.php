@@ -62,7 +62,7 @@ function tripcode($name_input) {
 		$salt = strtr($salt, ':;<=>?@[\]^_`', 'ABCDEFGabcdef');
 		if(isset($t[2])) {
 			// secure
-			$trip = '!!' . substr(crypt($trip, TRIPSEED), (-1 * 10));
+			$trip = '!!' . substr(crypt($trip, TRIP_SEED), (-1 * 10));
 		} else {
 			// insecure
 			$trip = '!' . substr(crypt($trip, $salt), (-1 * 10));
