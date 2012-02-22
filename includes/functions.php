@@ -614,7 +614,7 @@ function delete_image($mode = 'reply', $post_id, $hard_delete = false) {
 		error::fatal('Invalid image deletion type.');
 	}
 	
-	$img = $db->q('SELECT COUNT(*), file_name FROM images WHERE md5 = (SELECT md5 FROM images WHERE '.$mode.'_id = ? LIMIT 1)', $post_id);
+	$img = $db->q('SELECT COUNT(*), file_name FROM images WHERE md5 = (SELECT md5 FROM images WHERE '.$mode.'_id = ? LIMIT 1) AND deleted = 0', $post_id);
 	list($img_usages, $img_filename) = $img->fetch();
 	if($img_filename) {
 		if($img_usages == 1) {
